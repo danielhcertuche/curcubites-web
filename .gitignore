@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 .streamlit/secrets.toml
+dist/
 *.pdf
 *.jpeg
 CURCUBITES_*.md
