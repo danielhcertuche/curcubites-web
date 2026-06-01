@@ -103,11 +103,11 @@ def mailto_url(message: str) -> str:
     return f"mailto:{email}?subject={quote('Pedido Curcubites')}&body={quote(message)}"
 
 
-def image_data_uri(path: Path) -> str:
-    suffix = path.suffix.lower()
-    mime = "image/png" if suffix == ".png" else "image/jpeg"
-    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
-    return f"data:{mime};base64,{encoded}"
+@st.cache_data
+def image_data_uri(path_str: str) -> str:
+    path = Path(path_str)
+    mime = "image/png" if path.suffix.lower() == ".png" else "image/jpeg"
+    return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode()}"
 
 
 
@@ -115,7 +115,7 @@ def inject_styles() -> None:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;0,800;0,900;1,400&family=Playfair+Display:wght@700;800;900&display=swap');
 
         :root {
           --ink: #151A12;
@@ -134,7 +134,7 @@ def inject_styles() -> None:
 
         html { scroll-behavior: smooth; overscroll-behavior: contain; }
         .stApp { background: var(--cream); color: var(--ink); }
-        html, body, [class*="css"] { font-family: Inter, system-ui, sans-serif; }
+        html, body, [class*="css"] { font-family: 'DM Sans', system-ui, sans-serif; }
 
         [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
         #MainMenu, footer { visibility: hidden; height: 0; }
@@ -555,6 +555,46 @@ def inject_styles() -> None:
         }
         .footer a { color: var(--turmeric) !important; text-decoration: none !important; font-weight: 900; }
 
+        /* ── hero brand intro ── */
+        .hero-brand-intro {
+          display: flex; align-items: center; gap: .65rem; margin-bottom: 1.5rem;
+        }
+        .hero-logo-mark {
+          width: 46px; height: 46px; border-radius: 50%; flex-shrink: 0;
+          background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+          display: grid; place-items: center;
+          font-family: 'Playfair Display', Georgia, serif; font-weight: 900;
+          font-size: 1.25rem; color: var(--cream);
+        }
+        .hero-brand-name-text {
+          font-weight: 900; font-size: .95rem; color: var(--cream); line-height: 1;
+        }
+        .hero-brand-sub-text {
+          font-size: .73rem; color: rgba(255,246,230,.5); margin-top: .12rem;
+        }
+
+        /* ── product-info inside product-shell ── */
+        .product-info { display: flex; flex-direction: column; }
+        .product-cta-row {
+          display: flex; gap: .75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;
+        }
+
+        /* ── cursor pointer everywhere interactive ── */
+        button, [role="button"], a, label[for],
+        div[data-testid="stButton"] > button,
+        div[data-testid="stLinkButton"] > a,
+        button[data-baseweb="tab"],
+        div[data-baseweb="tab-list"] button { cursor: pointer !important; }
+
+        /* ── smooth transitions on interactive elements ── */
+        a, button { transition: background 180ms ease, color 180ms ease, opacity 180ms ease, transform 180ms ease; }
+
+        /* ── product section: controls row below shell ── */
+        .product-controls {
+          display: flex; align-items: center; gap: .75rem;
+          margin-top: .85rem; padding: 0 .5rem;
+        }
+
         @media (max-width: 900px) {
           [data-testid="stMainBlockContainer"] { padding: .7rem .8rem 3rem !important; }
           .topbar { position: relative; align-items: flex-start; }
@@ -626,25 +666,31 @@ def render_hero() -> None:
     img1 = BASE_DIR / "imgenes_finales" / "55d95c75-98ae-4418-a4df-c4689f51441c.jpeg"
     img2 = BASE_DIR / "imgenes_finales" / "c0661bdd-e0ce-42bf-93d8-ee2a60dd867c.jpeg"
     img_path = img1 if img1.exists() else img2
+    img_uri = image_data_uri(str(img_path)) if img_path.exists() else ""
     img_tag = (
-        f'<img src="{image_data_uri(img_path)}" '
-        f'alt="Curcubites — chips de plátano horneadas con cúrcuma" loading="eager">'
-        if img_path.exists()
+        f'<img src="{img_uri}" alt="Curcubites — chips de plátano horneadas con cúrcuma" loading="eager">'
+        if img_uri
         else ""
     )
-    # Pure HTML so CSS grid applies to both children correctly
     st.markdown(
         f"""
         <section id="inicio" class="hero">
           <div class="hero-copy">
-            <div class="eyebrow">Colombia · horneadas · sin freír</div>
+            <div class="hero-brand-intro">
+              <div class="hero-logo-mark">C</div>
+              <div>
+                <div class="hero-brand-name-text">Curcubites</div>
+                <div class="hero-brand-sub-text">Chips de plátano · Colombia</div>
+              </div>
+            </div>
+            <div class="eyebrow">Horneadas · Sin freír · Con cúrcuma</div>
             <h1>Crujiente<br>real.</h1>
             <p>
-              Chips de plátano con cúrcuma y pimienta negra.
-              El snack que no para de pedir.
+              Plátano horneado con cúrcuma y pimienta negra.
+              Sin fritura. Sin excusas. El snack que no para de pedir.
             </p>
             <div class="hero-actions">
-              <a class="btn-main" href="#productos">Ver sabores →</a>
+              <a class="btn-main" href="#productos">Ver sabores</a>
               <a class="btn-soft" href="#carrito">Pedir ahora</a>
             </div>
           </div>
@@ -663,7 +709,7 @@ def render_trust_strip() -> None:
         <div class="trust-strip">
           <div class="trust-item"><strong>Horneadas</strong><span>No fritas.</span></div>
           <div class="trust-item"><strong>Ingredientes claros</strong><span>Plátano, cúrcuma y pimienta.</span></div>
-          <div class="trust-item"><strong>Compra flexible</strong><span>WhatsApp o pago mock online.</span></div>
+          <div class="trust-item"><strong>Pedido por WhatsApp</strong><span>Confirmamos y coordinamos entrega.</span></div>
           <div class="trust-item"><strong>Marca local</strong><span>Diseñada para Colombia.</span></div>
         </div>
         """,
@@ -714,65 +760,66 @@ def render_products(products: list[dict]) -> None:
         <section id="productos" class="section-band">
           <div class="section-head">
             <div>
-              <div class="section-kicker">Sección de productos</div>
+              <div class="section-kicker">Nuestros sabores</div>
               <h2 class="section-title">Elige el sabor que va contigo.</h2>
             </div>
             <p class="section-copy">
-              Tres perfiles para diferentes antojos. Armas tu carrito y eliges confirmación
-              por WhatsApp o pasarela mock online.
+              Original, Picante o Dulce. 13 g por bolsa, pedido por WhatsApp.
             </p>
           </div>
         </section>
         """,
         unsafe_allow_html=True,
     )
-    labels = [product["name"].replace("Curcubites ", "") for product in products]
+    labels = [p["name"].replace("Curcubites ", "") for p in products]
     tabs = st.tabs(labels)
-    for tab, product in zip(tabs, products):
+    for tab, p in zip(tabs, products):
         with tab:
-            img_path = BASE_DIR / product["image"]
-            st.markdown('<div class="product-shell">', unsafe_allow_html=True)
-            image_col, info_col = st.columns([1.05, 0.95], gap="large", vertical_alignment="center")
-            with image_col:
-                if img_path.exists():
-                    st.markdown(
-                        f"""
-                        <div class="product-photo">
-                          <img src="{image_data_uri(img_path)}" alt="{product['name']}">
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-            with info_col:
-                st.markdown(
-                    f"""
-                    <span class="flavor-tag" style="background:{product.get('badge_color', '#245C2A')}">{product['flavor_tag']}</span>
-                    <h3 class="product-title">{product['name']}</h3>
-                    <div class="product-sub">{product['tagline']}</div>
-                    <p class="product-desc">{product['description']}</p>
-                    <span class="ingredient-pill">{product['ingredients']}</span>
-                    <div class="price">{money(int(product['price']))}</div>
-                    <div class="price-note">por bolsa · 13 g · WhatsApp o pago mock online</div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                qty = st.number_input(
-                    "Unidades",
-                    min_value=1,
-                    max_value=24,
-                    value=1,
-                    step=1,
-                    key=f"qty_{product['id']}",
-                )
-                if st.button(
-                    f"Agregar al pedido · {money(int(product['price']) * int(qty))}",
-                    key=f"add_{product['id']}",
-                    use_container_width=True,
-                ):
-                    add_to_cart(product["id"], int(qty))
-                    st.toast(f"{product['name']} agregado")
-                    st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
+            img_path = BASE_DIR / p["image"]
+            img_uri = image_data_uri(str(img_path)) if img_path.exists() else ""
+            img_tag = (
+                f'<img src="{img_uri}" alt="{p["name"]}" loading="lazy">'
+                if img_uri
+                else f'<div style="aspect-ratio:1;background:var(--cream-2);border-radius:8px"></div>'
+            )
+            badge = p.get("badge_color", "#245C2A")
+            # Entire product card is pure HTML so CSS grid-template-columns applies
+            st.markdown(
+                f"""
+                <div class="product-shell">
+                  <div class="product-photo">{img_tag}</div>
+                  <div class="product-info">
+                    <span class="flavor-tag" style="background:{badge}">{p['flavor_tag']}</span>
+                    <h3 class="product-title">{p['name']}</h3>
+                    <div class="product-sub">{p['tagline']}</div>
+                    <p class="product-desc">{p['description']}</p>
+                    <span class="ingredient-pill">{p['ingredients']}</span>
+                    <div class="price">{money(int(p['price']))}</div>
+                    <div class="price-note">por bolsa · 13 g · Confirmación por WhatsApp</div>
+                  </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            # Interactive controls BELOW the card (Streamlit widgets can't live inside HTML)
+            qty_col, btn_col = st.columns([1, 2.5])
+            qty = qty_col.number_input(
+                "Unidades",
+                min_value=1,
+                max_value=24,
+                value=1,
+                step=1,
+                key=f"qty_{p['id']}",
+                label_visibility="collapsed",
+            )
+            if btn_col.button(
+                f"Agregar {int(qty)} al carrito — {money(int(p['price']) * int(qty))}",
+                key=f"add_{p['id']}",
+                use_container_width=True,
+            ):
+                add_to_cart(p["id"], int(qty))
+                st.toast(f"{p['name']} agregado")
+                st.rerun()
 
 
 def render_story() -> None:
