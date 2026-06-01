@@ -5,6 +5,8 @@ __pycache__/
 dist/
 *.pdf
 *.jpeg
+!imgenes_finales/
+!imgenes_finales/*.jpeg
 CURCUBITES_*.md
 generate_*.py
 curcubites_concept_*_original*.jpg

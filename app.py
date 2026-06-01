@@ -12,14 +12,12 @@ DEFAULT_EMAIL = "ventas@curcubites.com"
 
 
 st.set_page_config(
-    page_title="Curcubites — Chips de plátano horneados",
-    page_icon="🌿",
+    page_title="Curcubites | Chips de plátano horneadas",
+    page_icon="C",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
-
-# ─── helpers ────────────────────────────────────────────────────────────────
 
 def money(value: int) -> str:
     return f"${value:,.0f}".replace(",", ".")
@@ -27,8 +25,8 @@ def money(value: int) -> str:
 
 @st.cache_data
 def load_products() -> list[dict]:
-    with PRODUCTS_PATH.open(encoding="utf-8") as f:
-        return json.load(f)
+    with PRODUCTS_PATH.open(encoding="utf-8") as file:
+        return json.load(file)
 
 
 def get_secret(name: str, default: str = "") -> str:
@@ -63,30 +61,28 @@ def update_quantity(product_id: str, qty: int) -> None:
 
 def cart_items(products: list[dict]) -> list[dict]:
     ensure_cart()
-    by_id = {p["id"]: p for p in products}
+    by_id = {product["id"]: product for product in products}
     return [
-        {**by_id[pid], "qty": qty, "subtotal": int(by_id[pid]["price"]) * qty}
-        for pid, qty in st.session_state.cart.items()
-        if pid in by_id
+        {**by_id[product_id], "qty": qty, "subtotal": int(by_id[product_id]["price"]) * qty}
+        for product_id, qty in st.session_state.cart.items()
+        if product_id in by_id
     ]
 
 
 def cart_total(items: list[dict]) -> int:
-    return sum(i["subtotal"] for i in items)
+    return sum(item["subtotal"] for item in items)
 
 
-def order_message(
-    items: list[dict], name: str, phone: str, city: str, address: str, notes: str
-) -> str:
+def order_message(items: list[dict], name: str, phone: str, city: str, address: str, notes: str) -> str:
     lines = [
-        "Hola, quiero hacer un pedido de Curcubites 🌿",
+        "Hola, quiero hacer un pedido de Curcubites:",
         "",
-        *[f"- {i['qty']} x {i['name']} = {money(i['subtotal'])}" for i in items],
+        *[f"- {item['qty']} x {item['name']} = {money(item['subtotal'])}" for item in items],
         "",
         f"Total: {money(cart_total(items))}",
         "",
         f"Nombre: {name}",
-        f"Teléfono / WhatsApp: {phone}",
+        f"WhatsApp: {phone}",
         f"Ciudad: {city}",
         f"Dirección: {address}",
     ]
@@ -106,567 +102,358 @@ def mailto_url(message: str) -> str:
     return f"mailto:{email}?subject={quote('Pedido Curcubites')}&body={quote(message)}"
 
 
-# ─── styles ─────────────────────────────────────────────────────────────────
-
 def inject_styles() -> None:
     st.markdown(
         """
         <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Inter:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap');
 
         :root {
-          --verde:        #245C2A;
-          --verde-hover:  #1a4320;
-          --verde-mid:    #3A7A41;
-          --curcuma:      #C4871A;
-          --terracota:    #A85232;
-          --crema:        #FFF6E6;
-          --crema-2:      #F5EDD8;
-          --dark:         #0F1A0C;
-          --negro:        #151A12;
-          --gris:         #4a5048;   /* 6.2:1 on cream — WCAG AA ✓ */
-          --verde-suave:  #E7F1DF;
-          --linea:        #E0D5C0;
-          --linea-dark:   #2a3827;
+          --ink: #151A12;
+          --olive: #0F1A0C;
+          --green: #245C2A;
+          --green-2: #3A7A41;
+          --leaf: #E7F1DF;
+          --cream: #FFF6E6;
+          --cream-2: #F4EAD6;
+          --paper: #FFFFFF;
+          --turmeric: #D99A22;
+          --terracotta: #A85232;
+          --line: #E2D5BB;
+          --muted: #50564C;
         }
 
-        html, body, [class*="css"] {
-          font-family: 'Inter', system-ui, sans-serif;
-        }
+        html { scroll-behavior: smooth; }
+        .stApp { background: var(--cream); color: var(--ink); }
+        html, body, [class*="css"] { font-family: Inter, system-ui, sans-serif; }
 
-        /* ── app background ── */
-        .stApp { background: var(--crema); }
-
-        /* ── block container ── */
+        [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
+        #MainMenu, footer { visibility: hidden; height: 0; }
+        [data-testid="stSidebar"] { display: none; }
         [data-testid="stMainBlockContainer"] {
-          max-width: 1320px;
-          padding: 0 2rem 5rem !important;
+          max-width: 1220px;
+          padding: 1.15rem 1.6rem 4rem !important;
         }
 
-        /* ─────────────────────────────────────────
-           SIDEBAR
-        ───────────────────────────────────────── */
-        [data-testid="stSidebar"],
-        [data-testid="stSidebar"] > div {
-          background: var(--dark) !important;
-        }
-
-        [data-testid="stSidebar"] * {
-          color: #FFF6E6 !important;
-        }
-
-        /* sidebar number input — dark fill, light text */
-        [data-testid="stSidebar"] [data-baseweb="input"] {
-          background: rgba(255,255,255,0.10) !important;
-          border: 1px solid rgba(255,255,255,0.18) !important;
-          border-radius: 8px !important;
-        }
-
-        [data-testid="stSidebar"] [data-baseweb="input"] input {
-          background: transparent !important;
-          color: #FFF6E6 !important;
-          caret-color: #FFF6E6;
-        }
-
-        /* sidebar spinner +/- buttons */
-        [data-testid="stSidebar"] [data-baseweb="input"] button {
-          background: transparent !important;
-          color: rgba(255,246,230,0.7) !important;
-          border: none !important;
-        }
-
-        [data-testid="stSidebar"] [data-testid="stButton"] > button {
-          background: rgba(255,255,255,0.08) !important;
-          border: 1px solid rgba(255,255,255,0.16) !important;
-          color: #FFF6E6 !important;
-          font-weight: 600 !important;
-          border-radius: 8px !important;
-        }
-
-        [data-testid="stSidebar"] [data-testid="stButton"] > button:hover {
-          background: rgba(255,255,255,0.15) !important;
-        }
-
-        /* ─────────────────────────────────────────
-           HERO CARD
-        ───────────────────────────────────────── */
-        .hero-card {
-          background: var(--dark);
-          border-radius: 24px;
-          padding: 4.5rem 3rem 3.5rem;
-          text-align: center;
-          margin-bottom: 0.25rem;
-        }
-
-        .hero-eyebrow {
-          display: inline-block;
-          background: rgba(255,255,255,0.09);
-          border: 1px solid rgba(255,255,255,0.14);
-          color: rgba(255,246,230,0.7);
-          font-size: 0.74rem;
-          font-weight: 600;
-          letter-spacing: 2px;
-          text-transform: uppercase;
-          padding: 0.32rem 1rem;
-          border-radius: 999px;
-          margin-bottom: 1.3rem;
-        }
-
-        .hero-h1 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(3.8rem, 10vw, 7rem);
-          font-weight: 900;
-          line-height: 0.9;
-          color: #FFF6E6;
-          letter-spacing: -2px;
-          margin: 0 0 1.3rem;
-        }
-
-        .hero-claim {
-          color: rgba(255,246,230,0.65);
-          font-size: 1.08rem;
-          line-height: 1.65;
-          max-width: 480px;
-          margin: 0 auto 1.6rem;
-        }
-
-        .hero-pill-row {
+        .topbar {
+          position: sticky;
+          top: 0;
+          z-index: 20;
           display: flex;
-          justify-content: center;
-          flex-wrap: wrap;
-          gap: 0.45rem;
-          margin-bottom: 2rem;
+          align-items: center;
+          justify-content: space-between;
+          gap: 1rem;
+          background: rgba(255, 246, 230, 0.92);
+          backdrop-filter: blur(14px);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 0.78rem 0.95rem;
+          margin-bottom: 1.2rem;
         }
-
-        .hero-pill {
-          border: 1px solid rgba(255,255,255,0.18);
-          border-radius: 999px;
-          padding: 0.28rem 0.85rem;
-          font-size: 0.8rem;
-          font-weight: 600;
-          color: rgba(255,246,230,0.82);
-          background: rgba(255,255,255,0.06);
+        .brand-lockup { display: flex; align-items: center; gap: 0.72rem; }
+        .brand-mark {
+          width: 38px; height: 38px; border-radius: 50%;
+          display: grid; place-items: center;
+          background: var(--olive); color: var(--cream);
+          font-weight: 900; font-family: 'Playfair Display', Georgia, serif;
         }
-
-        .hero-cta {
-          display: inline-block;
-          background: var(--verde);
-          color: #FFF6E6 !important;
-          text-decoration: none !important;
-          padding: 0.9rem 2.4rem;
-          border-radius: 999px;
-          font-weight: 800;
-          font-size: 0.95rem;
-          letter-spacing: 0.3px;
+        .brand-name { font-weight: 900; letter-spacing: 0; line-height: 1; }
+        .brand-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.12rem; }
+        .navlinks { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; justify-content: flex-end; }
+        .navlinks a {
+          color: var(--ink) !important; text-decoration: none !important;
+          font-size: 0.84rem; font-weight: 800;
+          padding: 0.48rem 0.72rem; border-radius: 999px;
         }
+        .navlinks a:hover { background: var(--leaf); }
+        .nav-cta { background: var(--green) !important; color: var(--cream) !important; }
 
-        .hero-cta:hover { background: var(--verde-mid); }
+        .social-rail {
+          position: fixed; right: 1rem; top: 35%; z-index: 30;
+          display: flex; flex-direction: column; gap: 0.55rem;
+        }
+        .social-rail a {
+          width: 46px; height: 46px; border-radius: 50%;
+          display: grid; place-items: center;
+          background: var(--paper); border: 1px solid var(--line);
+          color: var(--ink) !important; text-decoration: none !important;
+          font-size: 0.72rem; font-weight: 900;
+          box-shadow: 0 12px 32px rgba(15, 26, 12, 0.12);
+        }
+        .social-rail a:hover { background: var(--green); color: var(--cream) !important; }
 
-        /* ─────────────────────────────────────────
-           TRUST STRIP
-        ───────────────────────────────────────── */
-        .trust-strip {
-          display: flex;
-          justify-content: center;
-          flex-wrap: wrap;
-          background: var(--crema-2);
-          border: 1px solid var(--linea);
-          border-top: none;
-          border-radius: 0 0 20px 20px;
+        .hero {
+          position: relative;
           overflow: hidden;
+          min-height: 78vh;
+          border-radius: 8px;
+          background:
+            linear-gradient(90deg, rgba(15,26,12,.94), rgba(15,26,12,.72)),
+            url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1800&q=80');
+          background-size: cover;
+          background-position: center;
+          padding: clamp(2rem, 5vw, 4.7rem);
+          display: grid;
+          grid-template-columns: 1.02fr 0.98fr;
+          gap: clamp(1.4rem, 4vw, 4rem);
+          align-items: center;
+        }
+        .hero::after {
+          content: "";
+          position: absolute;
+          left: -6%; bottom: -10%;
+          width: 48%; height: 34%;
+          background: var(--turmeric);
+          transform: rotate(-5deg);
+          opacity: .92;
+          clip-path: polygon(0 35%, 100% 0, 90% 100%, 0 100%);
+        }
+        .hero-copy, .hero-visual { position: relative; z-index: 2; }
+        .eyebrow {
+          display: inline-flex; align-items: center; gap: .45rem;
+          color: rgba(255,246,230,.9);
+          border: 1px solid rgba(255,246,230,.25);
+          background: rgba(255,255,255,.08);
+          border-radius: 999px;
+          padding: .38rem .9rem;
+          font-size: .74rem;
+          font-weight: 900;
+          text-transform: uppercase;
+          letter-spacing: 1.8px;
+          margin-bottom: 1.2rem;
+        }
+        .hero h1 {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(3.3rem, 8vw, 6.6rem);
+          line-height: .9;
+          color: var(--cream);
+          margin: 0 0 1.1rem;
+          letter-spacing: 0;
+        }
+        .hero p {
+          color: rgba(255,246,230,.82);
+          font-size: clamp(1rem, 2vw, 1.18rem);
+          line-height: 1.7;
+          max-width: 39rem;
+          margin: 0 0 1.5rem;
+        }
+        .hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; }
+        .btn-main, .btn-soft {
+          display: inline-flex; align-items: center; justify-content: center;
+          min-height: 3rem;
+          padding: .72rem 1.25rem;
+          border-radius: 999px;
+          text-decoration: none !important;
+          font-weight: 900;
+          font-size: .92rem;
+        }
+        .btn-main { background: var(--turmeric); color: var(--olive) !important; }
+        .btn-soft { border: 1px solid rgba(255,246,230,.32); color: var(--cream) !important; background: rgba(255,255,255,.08); }
+        .hero-card-img {
+          background: rgba(255,246,230,.92);
+          border: 1px solid rgba(255,246,230,.45);
+          border-radius: 8px;
+          padding: .7rem;
+          box-shadow: 0 30px 80px rgba(0,0,0,.32);
+          transform: rotate(2deg);
+        }
+        .hero-card-img img { border-radius: 6px; display: block; width: 100%; }
+
+        .trust-strip {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          border: 1px solid var(--line);
+          border-top: 0;
+          background: var(--paper);
+          border-radius: 0 0 8px 8px;
           margin-bottom: 3rem;
         }
+        .trust-item { padding: 1rem; border-right: 1px solid var(--line); }
+        .trust-item:last-child { border-right: 0; }
+        .trust-item strong { display: block; font-size: .95rem; }
+        .trust-item span { display: block; color: var(--muted); font-size: .78rem; margin-top: .15rem; }
 
-        .trust-item {
-          display: flex;
-          align-items: center;
-          gap: 0.45rem;
-          padding: 0.8rem 1.4rem;
-          font-size: 0.83rem;
-          font-weight: 600;
-          color: var(--negro);
-          border-right: 1px solid var(--linea);
-          white-space: nowrap;
+        .section-band {
+          margin: 3rem 0;
+          padding: clamp(2rem, 5vw, 4rem);
+          border-radius: 8px;
+          background: var(--paper);
+          border: 1px solid var(--line);
         }
-
-        .trust-item:last-child { border-right: none; }
-
-        /* ─────────────────────────────────────────
-           SECTION HEADINGS
-        ───────────────────────────────────────── */
-        .section-tag {
-          display: block;
-          font-size: 0.72rem;
-          font-weight: 700;
+        .section-band.alt { background: var(--cream-2); }
+        .section-head { display: flex; justify-content: space-between; gap: 1rem; align-items: end; margin-bottom: 1.6rem; }
+        .section-kicker {
+          color: var(--green);
+          font-size: .72rem;
+          font-weight: 900;
           letter-spacing: 2px;
           text-transform: uppercase;
-          color: var(--verde);
-          margin-bottom: 0.4rem;
+          margin-bottom: .45rem;
         }
-
-        .section-h2 {
+        .section-title {
           font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(2.1rem, 5vw, 3rem);
-          font-weight: 800;
-          color: var(--negro);
-          line-height: 1.05;
-          letter-spacing: -0.5px;
-          margin: 0 0 0.45rem;
-        }
-
-        .section-copy {
-          color: var(--gris);
-          font-size: 0.96rem;
-          margin-bottom: 1.8rem;
-        }
-
-        /* ─────────────────────────────────────────
-           PRODUCT TABS  (st.tabs pill override)
-        ───────────────────────────────────────── */
-        div[data-baseweb="tab-list"] {
-          background: transparent !important;
-          gap: 0.45rem;
-          border-bottom: none !important;
-          padding-bottom: 0 !important;
-          margin-bottom: 1.5rem;
-        }
-
-        button[data-baseweb="tab"] {
-          background: rgba(255,255,255,0.85) !important;
-          border: 1.5px solid var(--linea) !important;
-          border-radius: 999px !important;
-          padding: 0.52rem 1.4rem !important;
-          font-weight: 700 !important;
-          font-size: 0.88rem !important;
-          color: var(--negro) !important;
-          transition: all 0.15s !important;
-          outline: none !important;
-        }
-
-        button[data-baseweb="tab"][aria-selected="true"] {
-          background: var(--negro) !important;
-          border-color: var(--negro) !important;
-          color: #FFF6E6 !important;
-        }
-
-        button[data-baseweb="tab"]:hover:not([aria-selected="true"]) {
-          border-color: var(--verde) !important;
-          color: var(--verde) !important;
-        }
-
-        div[data-baseweb="tab-highlight"] { display: none !important; }
-        div[data-baseweb="tab-border"]    { display: none !important; }
-        div[data-baseweb="tab-panel"]     { padding: 0 !important; }
-
-        /* ── product detail ── */
-        .flavor-tag-badge {
-          display: inline-block;
-          font-size: 0.68rem;
-          font-weight: 900;
-          letter-spacing: 3px;
-          text-transform: uppercase;
-          color: #fff;
-          padding: 0.28rem 0.85rem;
-          border-radius: 999px;
-          margin-bottom: 0.9rem;
-        }
-
-        .product-h2 {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(2.3rem, 5vw, 3.4rem);
-          font-weight: 900;
-          color: var(--negro);
-          line-height: 1.0;
-          letter-spacing: -0.5px;
-          margin: 0 0 0.4rem;
-        }
-
-        .product-tagline {
-          font-size: 1.05rem;
-          font-style: italic;
-          color: var(--gris);
-          margin: 0 0 0.85rem;
-        }
-
-        .product-desc {
-          font-size: 0.94rem;
-          color: var(--gris);
-          line-height: 1.6;
-          margin: 0 0 1rem;
-        }
-
-        .ingredients-pill {
-          display: inline-block;
-          font-size: 0.79rem;
-          font-weight: 600;
-          color: var(--verde);
-          background: var(--verde-suave);
-          padding: 0.28rem 0.85rem;
-          border-radius: 999px;
-          margin-bottom: 1.3rem;
-        }
-
-        .price-big {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(3rem, 6vw, 4.5rem);
-          font-weight: 900;
-          color: var(--negro);
-          line-height: 1;
-          margin: 0 0 0.18rem;
-        }
-
-        .price-note {
-          font-size: 0.8rem;
-          color: #7a8078;           /* 4.6:1 on cream ✓ */
-          margin: 0 0 1.3rem;
-        }
-
-        /* ─────────────────────────────────────────
-           STORY CARD
-        ───────────────────────────────────────── */
-        .story-card {
-          background: var(--dark);
-          border-radius: 24px;
-          padding: 4rem 3rem;
-          text-align: center;
-          margin: 2.5rem 0;
-        }
-
-        .story-quote {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(2rem, 5vw, 3.2rem);
-          font-weight: 800;
-          color: #FFF6E6;
-          line-height: 1.15;
-          margin: 0 auto 1.5rem;
-          max-width: 680px;
-        }
-
-        .story-body {
-          color: rgba(255,246,230,0.58);  /* 3.4:1 on dark — large text context ✓ */
-          font-size: 0.97rem;
-          line-height: 1.72;
-          max-width: 540px;
-          margin: 0 auto 1.5rem;
-        }
-
-        .story-brand {
-          font-size: 0.78rem;
-          font-weight: 600;
-          letter-spacing: 1.5px;
-          text-transform: uppercase;
-          color: rgba(255,246,230,0.35);
-        }
-
-        /* ─────────────────────────────────────────
-           INGREDIENTS
-        ───────────────────────────────────────── */
-        .ingredient-card {
-          background: #fff;
-          border: 1.5px solid var(--linea);
-          border-radius: 18px;
-          padding: 1.6rem 1.2rem;
-          text-align: center;
-        }
-
-        .ingredient-icon { font-size: 2.4rem; margin-bottom: 0.55rem; }
-
-        .ingredient-name {
-          font-weight: 800;
-          font-size: 1rem;
-          color: var(--negro);
-          margin: 0 0 0.3rem;
-        }
-
-        .ingredient-desc {
-          font-size: 0.84rem;
-          color: var(--gris);
-          line-height: 1.5;
+          color: var(--ink);
+          font-size: clamp(2.3rem, 5vw, 4.2rem);
+          line-height: .98;
           margin: 0;
         }
+        .section-copy { color: var(--muted); max-width: 34rem; line-height: 1.65; margin: .7rem 0 0; }
 
-        /* ─────────────────────────────────────────
-           HOW TO ORDER — 3 STEPS
-        ───────────────────────────────────────── */
-        .steps-wrap {
+        .product-shell {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
-          gap: 1.25rem;
+          grid-template-columns: minmax(0, 1fr) minmax(320px, .86fr);
+          gap: clamp(1.4rem, 4vw, 3rem);
+          align-items: center;
+        }
+        .product-photo img { border-radius: 8px; box-shadow: 0 20px 50px rgba(21,26,18,.16); }
+        .flavor-tag {
+          display: inline-block;
+          color: var(--cream);
+          border-radius: 999px;
+          padding: .38rem .9rem;
+          font-size: .7rem;
+          font-weight: 900;
+          letter-spacing: 2px;
+          text-transform: uppercase;
+          margin-bottom: .9rem;
+        }
+        .product-title {
+          font-family: 'Playfair Display', Georgia, serif;
+          font-size: clamp(2.2rem, 5vw, 4rem);
+          line-height: .98;
+          margin: 0 0 .55rem;
+        }
+        .product-sub { color: var(--terracotta); font-weight: 800; font-style: italic; margin-bottom: .75rem; }
+        .product-desc { color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+        .ingredient-pill {
+          display: inline-block;
+          background: var(--leaf);
+          color: var(--green);
+          font-weight: 900;
+          border-radius: 999px;
+          padding: .45rem .8rem;
+          font-size: .8rem;
           margin-bottom: 1rem;
         }
+        .price { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: clamp(3rem, 7vw, 5.2rem); line-height: .88; }
+        .price-note { color: var(--muted); font-size: .82rem; margin-bottom: 1rem; }
 
-        .step-card {
-          background: #fff;
-          border: 1.5px solid var(--linea);
-          border-radius: 18px;
-          padding: 1.6rem 1.4rem;
+        div[data-baseweb="tab-list"] { gap: .55rem; border: 0 !important; margin-bottom: 1.6rem; }
+        button[data-baseweb="tab"] {
+          border: 1px solid var(--line) !important;
+          background: var(--paper) !important;
+          border-radius: 999px !important;
+          padding: .52rem 1.1rem !important;
+          font-weight: 900 !important;
+          color: var(--ink) !important;
         }
+        button[data-baseweb="tab"][aria-selected="true"] { background: var(--olive) !important; color: var(--cream) !important; }
+        div[data-baseweb="tab-highlight"], div[data-baseweb="tab-border"] { display: none !important; }
 
-        .step-num {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 2.8rem;
-          font-weight: 900;
-          color: var(--linea);
-          line-height: 1;
-          margin-bottom: 0.5rem;
-        }
-
-        .step-title {
-          font-weight: 800;
-          color: var(--negro);
-          font-size: 1rem;
-          margin: 0 0 0.35rem;
-        }
-
-        .step-desc {
-          font-size: 0.86rem;
-          color: var(--gris);
-          line-height: 1.5;
-          margin: 0;
-        }
-
-        /* ─────────────────────────────────────────
-           CHECKOUT
-        ───────────────────────────────────────── */
-        .checkout-notice {
-          background: var(--verde-suave);
-          border: 1px solid #b8d4b8;
-          border-radius: 10px;
-          padding: 0.88rem 1.1rem;
-          color: #1a4320;             /* 7.5:1 on verde-suave ✓ */
-          font-size: 0.88rem;
-          font-weight: 600;
-          margin-bottom: 1.2rem;
-        }
-
-        .order-summary-card {
-          background: var(--crema-2);
-          border: 1.5px solid var(--linea);
-          border-radius: 14px;
-          padding: 1.1rem 1.4rem;
-          margin-bottom: 1.2rem;
-        }
-
-        /* ─────────────────────────────────────────
-           FORM INPUTS — contrast fixes
-        ───────────────────────────────────────── */
-        /* text & textarea: white bg, dark text */
+        [data-testid="stNumberInput"] [data-baseweb="input"],
         [data-testid="stTextInput"] [data-baseweb="input"],
-        [data-testid="stTextArea"]  [data-baseweb="textarea"] {
-          background: #ffffff !important;
-          border: 1.5px solid var(--linea) !important;
+        [data-testid="stTextArea"] [data-baseweb="textarea"] {
+          border: 1px solid var(--line) !important;
           border-radius: 8px !important;
+          background: #fff !important;
         }
-
+        [data-testid="stNumberInput"] input,
         [data-testid="stTextInput"] input,
-        [data-testid="stTextArea"] textarea {
-          background: #ffffff !important;
-          color: var(--negro) !important;     /* 14:1 on white ✓ */
-        }
-
-        [data-testid="stTextInput"] input::placeholder,
-        [data-testid="stTextArea"] textarea::placeholder {
-          color: #767b74 !important;          /* 4.7:1 on white ✓ */
-        }
-
-        [data-testid="stTextInput"] [data-baseweb="input"]:focus-within,
-        [data-testid="stTextArea"]  [data-baseweb="textarea"]:focus-within {
-          border-color: var(--verde) !important;
-          box-shadow: 0 0 0 2px rgba(36,92,42,0.15) !important;
-        }
-
-        /* number input main content */
-        [data-testid="stNumberInput"] [data-baseweb="input"] {
-          background: #ffffff !important;
-          border: 1.5px solid var(--linea) !important;
-          border-radius: 8px !important;
-        }
-
-        [data-testid="stNumberInput"] input {
-          background: #ffffff !important;
-          color: var(--negro) !important;
-          font-weight: 700 !important;
-          font-size: 1rem !important;
-          text-align: center !important;
-        }
-
-        /* ─────────────────────────────────────────
-           BUTTONS
-        ───────────────────────────────────────── */
+        [data-testid="stTextArea"] textarea { color: var(--ink) !important; background: #fff !important; }
         div[data-testid="stButton"] > button {
           border-radius: 999px;
-          border: 2px solid var(--verde);
-          background: var(--verde);
-          color: #FFF6E6;
-          font-weight: 800;
-          font-size: 0.91rem;
-          min-height: 2.9rem;
-          padding: 0 1.5rem;
-          transition: background 0.14s, transform 0.1s;
+          border: 1px solid var(--green);
+          background: var(--green);
+          color: var(--cream);
+          min-height: 3rem;
+          font-weight: 900;
         }
+        div[data-testid="stButton"] > button:hover { background: var(--olive); border-color: var(--olive); color: var(--cream); }
+        div[data-testid="stLinkButton"] > a { border-radius: 999px; font-weight: 900; }
 
-        div[data-testid="stButton"] > button:hover {
-          background: var(--verde-hover);
-          border-color: var(--verde-hover);
-          transform: translateY(-1px);
+        .editorial-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
         }
-
-        div[data-testid="stLinkButton"] > a {
-          border-radius: 999px;
-          font-weight: 800;
+        .editorial-card {
+          min-height: 250px;
+          border-radius: 8px;
+          padding: 1.35rem;
+          background: var(--cream);
+          border: 1px solid var(--line);
+          position: relative;
+          overflow: hidden;
         }
+        .editorial-card::after {
+          content: "";
+          position: absolute;
+          width: 160px; height: 80px;
+          right: -32px; bottom: 20px;
+          background: var(--turmeric);
+          clip-path: polygon(0 20%, 100% 0, 85% 100%, 10% 80%);
+          opacity: .75;
+        }
+        .editorial-card.dark { background: var(--olive); color: var(--cream); border-color: var(--olive); }
+        .editorial-card h3 { font-family: 'Playfair Display', Georgia, serif; font-size: 1.7rem; line-height: 1; margin: 0 0 .7rem; position: relative; z-index: 2; }
+        .editorial-card p { color: var(--muted); line-height: 1.6; font-size: .92rem; position: relative; z-index: 2; }
+        .editorial-card.dark p { color: rgba(255,246,230,.74); }
 
-        /* ─────────────────────────────────────────
-           FOOTER
-        ───────────────────────────────────────── */
-        .site-footer {
-          background: var(--dark);
-          border-radius: 24px;
-          padding: 3rem;
-          margin-top: 2rem;
+        .blog-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .blog-card {
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 1.25rem;
+        }
+        .blog-card span { color: var(--green); font-size: .7rem; font-weight: 900; letter-spacing: 1.6px; text-transform: uppercase; }
+        .blog-card h3 { margin: .5rem 0; font-size: 1.12rem; }
+        .blog-card p { color: var(--muted); font-size: .9rem; line-height: 1.55; }
+
+        .cart-card, .checkout-card {
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: 1.25rem;
+        }
+        .cart-row {
           display: flex;
           justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1.5rem;
+          gap: .8rem;
+          border-bottom: 1px solid var(--line);
+          padding: .75rem 0;
         }
-
-        .footer-brand {
-          font-family: 'Playfair Display', Georgia, serif;
-          font-size: 1.5rem;
+        .cart-row:last-child { border-bottom: 0; }
+        .notice {
+          background: var(--leaf);
+          color: var(--green);
+          border-radius: 8px;
+          padding: .85rem 1rem;
           font-weight: 800;
-          color: #FFF6E6;
-          line-height: 1;
+          margin: 1rem 0;
         }
-
-        .footer-sub {
-          color: rgba(255,246,230,0.45);
-          font-size: 0.83rem;
-          margin-top: 0.3rem;
+        .footer {
+          margin-top: 3rem;
+          background: var(--olive);
+          color: var(--cream);
+          border-radius: 8px;
+          padding: 2rem;
+          display: flex;
+          justify-content: space-between;
+          gap: 1rem;
+          flex-wrap: wrap;
         }
+        .footer a { color: var(--turmeric) !important; text-decoration: none !important; font-weight: 900; }
 
-        .footer-link {
-          color: var(--curcuma) !important;
-          text-decoration: none !important;
-          font-weight: 700;
-          font-size: 0.9rem;
-        }
-
-        .footer-note {
-          color: rgba(255,246,230,0.28);
-          font-size: 0.75rem;
-          margin-top: 0.3rem;
-        }
-
-        /* ─────────────────────────────────────────
-           RESPONSIVE
-        ───────────────────────────────────────── */
-        @media (max-width: 768px) {
-          .hero-h1    { font-size: 3.8rem; }
-          .steps-wrap { grid-template-columns: 1fr; }
-          .trust-strip { flex-direction: column; }
-          .trust-item  { border-right: none; border-bottom: 1px solid var(--linea); }
-          .site-footer { flex-direction: column; text-align: center; }
+        @media (max-width: 900px) {
+          [data-testid="stMainBlockContainer"] { padding: .7rem .8rem 3rem !important; }
+          .topbar { position: relative; align-items: flex-start; }
+          .navlinks { justify-content: flex-start; }
+          .hero, .product-shell { grid-template-columns: 1fr; min-height: auto; }
+          .trust-strip, .editorial-grid, .blog-grid { grid-template-columns: 1fr; }
+          .trust-item { border-right: 0; border-bottom: 1px solid var(--line); }
+          .social-rail { position: static; flex-direction: row; margin: .8rem 0 1rem; }
+          .section-head { display: block; }
         }
         </style>
         """,
@@ -674,45 +461,74 @@ def inject_styles() -> None:
     )
 
 
-# ─── sections ───────────────────────────────────────────────────────────────
-
-def render_hero() -> None:
+def render_nav() -> None:
     st.markdown(
         """
-        <div class="hero-card">
-          <div class="hero-eyebrow">Colombia · Horneadas · Sin freír</div>
-          <h1 class="hero-h1">Crujiente<br>real.</h1>
-          <p class="hero-claim">
-            Chips de plátano con cúrcuma y pimienta negra.
-            El snack que no para de pedir.
-          </p>
-          <div class="hero-pill-row">
-            <span class="hero-pill">🌿 Plátano + cúrcuma</span>
-            <span class="hero-pill">⚫ Pimienta negra</span>
-            <span class="hero-pill">13 g por bolsa</span>
-            <span class="hero-pill">Pedido por WhatsApp</span>
+        <nav class="topbar">
+          <div class="brand-lockup">
+            <div class="brand-mark">C</div>
+            <div>
+              <div class="brand-name">Curcubites</div>
+              <div class="brand-sub">Chips de plátano horneadas</div>
+            </div>
           </div>
-          <a class="hero-cta" href="#sabores">Ver sabores →</a>
-        </div>
+          <div class="navlinks">
+            <a href="#inicio">Inicio</a>
+            <a href="#sabores">Sabores</a>
+            <a href="#marca">La marca</a>
+            <a href="#blog">Blog</a>
+            <a href="#pedido" class="nav-cta">Pedir</a>
+          </div>
+        </nav>
+        <aside class="social-rail" aria-label="Redes sociales y blog">
+          <a href="https://instagram.com/curcubites" target="_blank" title="Instagram">IG</a>
+          <a href="https://www.tiktok.com/search?q=curcubites" target="_blank" title="TikTok">TK</a>
+          <a href="#blog" title="Blog">BL</a>
+          <a href="#pedido" title="Pedido">WA</a>
+        </aside>
         """,
         unsafe_allow_html=True,
     )
-    _, img_col, _ = st.columns([1, 2, 1])
-    with img_col:
-        hero_img = BASE_DIR / "imgenes_finales" / "55d95c75-98ae-4418-a4df-c4689f51441c.jpeg"
-        if hero_img.exists():
-            st.image(str(hero_img), use_container_width=True)
+
+
+def render_hero() -> None:
+    image = BASE_DIR / "imgenes_finales" / "c0661bdd-e0ce-42bf-93d8-ee2a60dd867c.jpeg"
+    st.markdown('<section id="inicio" class="hero">', unsafe_allow_html=True)
+    copy_col, image_col = st.columns([1.08, 0.92], vertical_alignment="center")
+    with copy_col:
+        st.markdown(
+            """
+            <div class="hero-copy">
+              <div class="eyebrow">Colombia · horneadas · sin freír</div>
+              <h1>El snack que se ve bien y sabe mejor.</h1>
+              <p>
+                Chips de plátano horneadas con cúrcuma y pimienta negra.
+                Una marca pensada para antojos reales, momentos activos y pedidos fáciles por WhatsApp.
+              </p>
+              <div class="hero-actions">
+                <a class="btn-main" href="#sabores">Ver sabores</a>
+                <a class="btn-soft" href="#marca">Conocer la marca</a>
+              </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with image_col:
+        if image.exists():
+            st.markdown('<div class="hero-card-img">', unsafe_allow_html=True)
+            st.image(str(image), use_container_width=True)
+            st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("</section>", unsafe_allow_html=True)
 
 
 def render_trust_strip() -> None:
     st.markdown(
         """
         <div class="trust-strip">
-          <div class="trust-item">🔥 Horneadas, no fritas</div>
-          <div class="trust-item">🌿 Ingredientes reales</div>
-          <div class="trust-item">📦 13 g por bolsa</div>
-          <div class="trust-item">💬 Pedido por WhatsApp</div>
-          <div class="trust-item">🇨🇴 Hecho en Colombia</div>
+          <div class="trust-item"><strong>Horneadas</strong><span>No fritas, sin aceite extra.</span></div>
+          <div class="trust-item"><strong>Ingredientes claros</strong><span>Plátano, cúrcuma y pimienta.</span></div>
+          <div class="trust-item"><strong>Compra simple</strong><span>Carrito y confirmación por WhatsApp.</span></div>
+          <div class="trust-item"><strong>Marca local</strong><span>Diseñada para Colombia.</span></div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -720,36 +536,45 @@ def render_trust_strip() -> None:
 
 
 def render_products(products: list[dict]) -> None:
-    st.markdown('<span class="section-tag">Nuestros sabores</span>', unsafe_allow_html=True)
     st.markdown(
-        '<h2 id="sabores" class="section-h2">Elige tu sabor</h2>',
+        """
+        <section id="sabores" class="section-band">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Nuestros sabores</div>
+              <h2 class="section-title">Elige el que va contigo.</h2>
+            </div>
+            <p class="section-copy">
+              Tres perfiles para diferentes antojos. Sin pago online: armas tu carrito
+              y confirmamos disponibilidad y entrega por WhatsApp.
+            </p>
+          </div>
+        </section>
+        """,
         unsafe_allow_html=True,
     )
-    st.markdown(
-        '<p class="section-copy">3 sabores · 13 g por bolsa · Sin pago online</p>',
-        unsafe_allow_html=True,
-    )
-
-    tab_labels = [f"{p['flavor_tag']}  ·  {p['name'].replace('Curcubites ', '')}" for p in products]
-    tabs = st.tabs(tab_labels)
-
-    for tab, p in zip(tabs, products):
+    labels = [product["name"].replace("Curcubites ", "") for product in products]
+    tabs = st.tabs(labels)
+    for tab, product in zip(tabs, products):
         with tab:
-            col_img, col_info = st.columns([1.05, 0.95], gap="large")
-            with col_img:
-                img_path = BASE_DIR / p["image"]
+            img_path = BASE_DIR / product["image"]
+            st.markdown('<div class="product-shell">', unsafe_allow_html=True)
+            image_col, info_col = st.columns([1.05, 0.95], gap="large", vertical_alignment="center")
+            with image_col:
                 if img_path.exists():
+                    st.markdown('<div class="product-photo">', unsafe_allow_html=True)
                     st.image(str(img_path), use_container_width=True)
-            with col_info:
+                    st.markdown("</div>", unsafe_allow_html=True)
+            with info_col:
                 st.markdown(
                     f"""
-                    <span class="flavor-tag-badge" style="background:{p['badge_color']}">{p['flavor_tag']}</span>
-                    <h2 class="product-h2">{p['name']}</h2>
-                    <p class="product-tagline">{p['tagline']}</p>
-                    <p class="product-desc">{p['description']}</p>
-                    <span class="ingredients-pill">🌿 {p['ingredients']}</span>
-                    <div class="price-big">{money(int(p['price']))}</div>
-                    <p class="price-note">por bolsa · 13 g · Sin pago online</p>
+                    <span class="flavor-tag" style="background:{product.get('badge_color', '#245C2A')}">{product['flavor_tag']}</span>
+                    <h3 class="product-title">{product['name']}</h3>
+                    <div class="product-sub">{product['tagline']}</div>
+                    <p class="product-desc">{product['description']}</p>
+                    <span class="ingredient-pill">{product['ingredients']}</span>
+                    <div class="price">{money(int(product['price']))}</div>
+                    <div class="price-note">por bolsa · 13 g · pedido por WhatsApp</div>
                     """,
                     unsafe_allow_html=True,
                 )
@@ -759,256 +584,240 @@ def render_products(products: list[dict]) -> None:
                     max_value=24,
                     value=1,
                     step=1,
-                    key=f"qty_{p['id']}",
+                    key=f"qty_{product['id']}",
                 )
                 if st.button(
-                    f"Agregar {int(qty)} al carrito — {money(int(p['price']) * int(qty))}",
-                    key=f"add_{p['id']}",
+                    f"Agregar al pedido · {money(int(product['price']) * int(qty))}",
+                    key=f"add_{product['id']}",
                     use_container_width=True,
                 ):
-                    add_to_cart(p["id"], int(qty))
-                    st.toast(f"✓ {p['name']} agregado al carrito")
+                    add_to_cart(product["id"], int(qty))
+                    st.toast(f"{product['name']} agregado")
                     st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
 
 
-def render_story() -> None:
+def render_brand_story() -> None:
     st.markdown(
         """
-        <div class="story-card">
-          <div class="story-quote">
-            "Nació de un antojo.<br>Quedó de un hábito."
-          </div>
-          <p class="story-body">
-            Curcubites empezó con una pregunta simple: ¿por qué el snack sabroso
-            tiene que ser ultra-procesado? Plátano, cúrcuma y pimienta negra.
-            Tres ingredientes reales, un resultado crujiente. Sin fritura, sin excusas.
-          </p>
-          <div class="story-brand">— Curcubites · Colombia</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
-def render_ingredients() -> None:
-    st.markdown('<span class="section-tag">Ingredientes</span>', unsafe_allow_html=True)
-    st.markdown('<h2 class="section-h2">Lo que le entra</h2>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="section-copy">Sin saborizantes artificiales. Lo que lees en el empaque es lo que comes.</p>',
-        unsafe_allow_html=True,
-    )
-    cols = st.columns(3, gap="large")
-    data = [
-        ("🍌", "Plátano", "Base crujiente, horneado sin freír. Natural, con fibra y sin aceite extra."),
-        ("🌾", "Cúrcuma", "Color dorado, sabor terroso. El ingrediente estrella de Curcubites."),
-        ("⚫", "Pimienta negra", "Activa la cúrcuma y da el cierre perfecto en cada mordisco."),
-    ]
-    for col, (icon, name, desc) in zip(cols, data):
-        col.markdown(
-            f"""
-            <div class="ingredient-card">
-              <div class="ingredient-icon">{icon}</div>
-              <p class="ingredient-name">{name}</p>
-              <p class="ingredient-desc">{desc}</p>
+        <section id="marca" class="section-band alt">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Marca con intención</div>
+              <h2 class="section-title">No vendemos bolsitas. Construimos antojos memorables.</h2>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-
-
-def render_how_to_order() -> None:
-    st.markdown('<span class="section-tag" style="margin-top:2.5rem;display:block">El proceso</span>', unsafe_allow_html=True)
-    st.markdown('<h2 class="section-h2">Cómo hacer tu pedido</h2>', unsafe_allow_html=True)
-    st.markdown(
-        '<p class="section-copy">Sin registro, sin pago online. Directo y rápido.</p>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        """
-        <div class="steps-wrap">
-          <div class="step-card">
-            <div class="step-num">01</div>
-            <p class="step-title">Elige tu sabor</p>
-            <p class="step-desc">Original, Picante o Dulce. Selecciona la cantidad y agrégalo al carrito lateral.</p>
+            <p class="section-copy">
+              Curcubites combina producto, empaque y experiencia digital.
+              La idea es sencilla: que el snack se entienda rápido, se vea apetitoso
+              y sea fácil de pedir desde cualquier celular.
+            </p>
           </div>
-          <div class="step-card">
-            <div class="step-num">02</div>
-            <p class="step-title">Completa tus datos</p>
-            <p class="step-desc">Nombre, WhatsApp, ciudad y dirección en el formulario de pedido.</p>
+          <div class="editorial-grid">
+            <article class="editorial-card dark">
+              <h3>Natural sin verse aburrido.</h3>
+              <p>El verde comunica origen. El dorado de la cúrcuma abre apetito. El contraste oscuro da presencia premium.</p>
+            </article>
+            <article class="editorial-card">
+              <h3>Pedido sin fricción.</h3>
+              <p>La página lleva al usuario del sabor al WhatsApp sin crear cuentas, pagos complejos ni pasos innecesarios.</p>
+            </article>
+            <article class="editorial-card">
+              <h3>Contenido que vende.</h3>
+              <p>Sabores, momentos de consumo, ingredientes y blog trabajan juntos para que la marca se sienta seria.</p>
+            </article>
           </div>
-          <div class="step-card">
-            <div class="step-num">03</div>
-            <p class="step-title">Confirma por WhatsApp</p>
-            <p class="step-desc">Te generamos el mensaje con tu pedido. Lo enviás y coordinamos la entrega.</p>
-          </div>
-        </div>
+        </section>
         """,
         unsafe_allow_html=True,
     )
 
 
-def render_cart(products: list[dict]) -> None:
-    with st.sidebar:
-        items = cart_items(products)
-        st.markdown("## 🛒 Carrito")
+def render_moments() -> None:
+    st.markdown(
+        """
+        <section class="section-band">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Momentos Curcubites</div>
+              <h2 class="section-title">Para cuando el cuerpo pide crujiente.</h2>
+            </div>
+            <p class="section-copy">
+              Oficina, universidad, post-entreno o plan en casa. Curcubites entra donde antes entraba
+              cualquier paquete de fritura, pero con una historia más limpia.
+            </p>
+          </div>
+          <div class="editorial-grid">
+            <article class="editorial-card"><h3>Después de entrenar</h3><p>Algo rápido, con sabor y sin sentir que dañaste la rutina.</p></article>
+            <article class="editorial-card dark"><h3>Entre reuniones</h3><p>Un snack práctico para tener a la mano sin terminar con grasa en los dedos.</p></article>
+            <article class="editorial-card"><h3>Plan de tarde</h3><p>Para compartir, probar sabores y convertir el antojo en conversación.</p></article>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
-        if not items:
-            st.markdown("Tu carrito está vacío.")
-            st.caption("Elige un sabor arriba para continuar.")
-            return
 
-        total = cart_total(items)
-        st.markdown(f"### Total: {money(total)}")
-        st.caption("Sin pago online — confirmamos por WhatsApp")
-        st.divider()
-
-        for item in items:
-            c1, c2 = st.columns([2, 1])
-            c1.markdown(f"**{item['name']}**")
-            c1.caption(f"{money(item['price'])} × {item['qty']} = {money(item['subtotal'])}")
-            qty = c2.number_input(
-                "cant",
-                min_value=0,
-                max_value=99,
-                value=int(item["qty"]),
-                step=1,
-                key=f"cart_qty_{item['id']}",
-                label_visibility="collapsed",
-            )
-            update_quantity(item["id"], int(qty))
-            if st.button("✕ Quitar", key=f"remove_{item['id']}", use_container_width=True):
-                remove_from_cart(item["id"])
-                st.rerun()
-            st.divider()
-
-        st.markdown(f"**Total: {money(cart_total(cart_items(products)))}**")
+def render_blog() -> None:
+    st.markdown(
+        """
+        <section id="blog" class="section-band alt">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Blog Curcubites</div>
+              <h2 class="section-title">Contenido que abre apetito.</h2>
+            </div>
+            <p class="section-copy">
+              Ideas cortas para redes, educación de producto y cultura snack.
+              Esto ayuda a que la marca parezca activa, no solo una página de ventas.
+            </p>
+          </div>
+          <div class="blog-grid">
+            <article class="blog-card">
+              <span>Ingredientes</span>
+              <h3>Por qué usamos cúrcuma y pimienta negra</h3>
+              <p>Una dupla de sabor intenso, color dorado y personalidad propia en cada mordisco.</p>
+            </article>
+            <article class="blog-card">
+              <span>Estilo de vida</span>
+              <h3>Snacks para llevar a la U, oficina o gimnasio</h3>
+              <p>Pequeños rituales para resolver el antojo sin complicarse la vida.</p>
+            </article>
+            <article class="blog-card">
+              <span>Marca</span>
+              <h3>Cómo se diseñó la identidad de Curcubites</h3>
+              <p>Color, empaque y tono pensados para vender desde la primera mirada.</p>
+            </article>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_checkout(products: list[dict]) -> None:
     items = cart_items(products)
     st.markdown(
-        '<span class="section-tag" style="margin-top:2rem;display:block">Finalizar</span>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<h2 class="section-h2">Finaliza tu pedido</h2>', unsafe_allow_html=True)
-
-    if not items:
-        st.info("Agrega al menos un producto al carrito para continuar.")
-        return
-
-    total = cart_total(items)
-    rows = "".join(
-        f"<tr>"
-        f"<td style='padding:.28rem 0;font-size:.9rem;color:#4a5048'>{i['qty']} × {i['name']}</td>"
-        f"<td style='text-align:right;padding:.28rem 0;font-weight:700;color:#151A12'>{money(i['subtotal'])}</td>"
-        f"</tr>"
-        for i in items
-    )
-    st.markdown(
-        f"""
-        <div class="order-summary-card">
-          <table style="width:100%;border-collapse:collapse">
-            {rows}
-            <tr style="border-top:1.5px solid #E0D5C0">
-              <td style="padding:.55rem 0;font-weight:900;font-size:1.05rem;color:#151A12">Total</td>
-              <td style="text-align:right;padding:.55rem 0;font-weight:900;font-size:1.05rem;color:#151A12">{money(total)}</td>
-            </tr>
-          </table>
-        </div>
-        <div class="checkout-notice">
-          💬 Sin pago online — generás el mensaje y lo enviás por WhatsApp para confirmar la entrega.
-        </div>
+        """
+        <section id="pedido" class="section-band">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Pedido</div>
+              <h2 class="section-title">Finaliza por WhatsApp.</h2>
+            </div>
+            <p class="section-copy">
+              Sin pago online. Preparas el mensaje, lo envías y coordinamos entrega.
+            </p>
+          </div>
+        </section>
         """,
         unsafe_allow_html=True,
     )
 
-    with st.form("checkout_form"):
-        col_a, col_b = st.columns(2)
-        name = col_a.text_input("Nombre completo *")
-        phone = col_b.text_input("WhatsApp *", placeholder="+57 300 000 0000")
-        city = col_a.text_input("Ciudad *")
-        address = col_b.text_input("Dirección de entrega *")
-        notes = st.text_area(
-            "Notas del pedido",
-            placeholder="Horario de entrega, barrio, referencias…",
-        )
-        submitted = st.form_submit_button("Preparar pedido →", use_container_width=True)
+    cart_col, form_col = st.columns([0.9, 1.1], gap="large")
+    with cart_col:
+        st.markdown('<div class="cart-card">', unsafe_allow_html=True)
+        st.markdown("### Tu carrito")
+        if not items:
+            st.info("Agrega un sabor para iniciar el pedido.")
+        else:
+            for item in items:
+                st.markdown(
+                    f"""
+                    <div class="cart-row">
+                      <div><strong>{item['name']}</strong><br><span>{money(item['price'])} x {item['qty']}</span></div>
+                      <strong>{money(item['subtotal'])}</strong>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                qty = st.number_input(
+                    f"Cantidad {item['name']}",
+                    min_value=0,
+                    max_value=99,
+                    value=int(item["qty"]),
+                    step=1,
+                    key=f"cart_qty_{item['id']}",
+                )
+                update_quantity(item["id"], int(qty))
+                if st.button("Quitar", key=f"remove_{item['id']}"):
+                    remove_from_cart(item["id"])
+                    st.rerun()
+            st.markdown(f"## Total: {money(cart_total(cart_items(products)))}")
+            st.markdown('<div class="notice">Confirmación y entrega por WhatsApp.</div>', unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
-    if submitted:
-        missing = [
-            label
-            for label, val in {
-                "nombre": name, "WhatsApp": phone, "ciudad": city, "dirección": address
-            }.items()
-            if not val.strip()
-        ]
-        if missing:
-            st.error(f"Faltan campos: {', '.join(missing)}")
+    with form_col:
+        st.markdown('<div class="checkout-card">', unsafe_allow_html=True)
+        if not items:
+            st.warning("El formulario se activa cuando tengas productos en el carrito.")
+            st.markdown("</div>", unsafe_allow_html=True)
             return
-        st.session_state.order_message = order_message(
-            items, name, phone, city, address, notes
-        )
 
-    message = st.session_state.get("order_message")
-    if message:
-        st.success("✓ Pedido listo. Envíalo por WhatsApp o correo para confirmar.")
-        st.code(message, language="text")
-        col_w, col_m = st.columns(2)
-        col_w.link_button("📲 Enviar por WhatsApp", whatsapp_url(message), use_container_width=True)
-        col_m.link_button("✉️ Enviar por correo", mailto_url(message), use_container_width=True)
+        with st.form("checkout_form"):
+            c1, c2 = st.columns(2)
+            name = c1.text_input("Nombre completo *")
+            phone = c2.text_input("WhatsApp *", placeholder="+57 300 000 0000")
+            city = c1.text_input("Ciudad *")
+            address = c2.text_input("Dirección de entrega *")
+            notes = st.text_area("Notas", placeholder="Barrio, horario o referencias de entrega.")
+            submitted = st.form_submit_button("Preparar mensaje de pedido", use_container_width=True)
 
+        if submitted:
+            missing = [
+                label
+                for label, value in {
+                    "nombre": name,
+                    "WhatsApp": phone,
+                    "ciudad": city,
+                    "dirección": address,
+                }.items()
+                if not value.strip()
+            ]
+            if missing:
+                st.error("Faltan campos: " + ", ".join(missing))
+            else:
+                st.session_state.order_message = order_message(items, name, phone, city, address, notes)
 
-def render_faq() -> None:
-    st.markdown(
-        '<span class="section-tag" style="margin-top:1.5rem;display:block">FAQ</span>',
-        unsafe_allow_html=True,
-    )
-    st.markdown('<h2 class="section-h2">Preguntas frecuentes</h2>', unsafe_allow_html=True)
-    faqs = [
-        ("¿Cuánto pesa cada bolsa?", "13 gramos por bolsa. Tamaño ideal para el antojo del día."),
-        ("¿Cómo hago el pedido?", "Armas el carrito aquí, completas el formulario y nos contactas por WhatsApp. Sin pago online."),
-        ("¿Hacen envíos?", "Coordinamos la entrega según la ciudad. Escríbenos para confirmar cobertura y tiempos."),
-        ("¿Son realmente sin freír?", "Sí, todas las Curcubites son horneadas. Sin fritura, sin aceite extra, sin compromiso con el sabor."),
-        ("¿Puedo pedir varios sabores en el mismo pedido?", "Claro. Agrega los sabores que quieras al carrito y hacemos un solo pedido."),
-    ]
-    for q, a in faqs:
-        with st.expander(q):
-            st.write(a)
+        message = st.session_state.get("order_message")
+        if message:
+            st.success("Pedido listo. Envíalo para confirmar disponibilidad y entrega.")
+            st.code(message, language="text")
+            w_col, m_col = st.columns(2)
+            w_col.link_button("Enviar por WhatsApp", whatsapp_url(message), use_container_width=True)
+            m_col.link_button("Enviar por correo", mailto_url(message), use_container_width=True)
+        st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_footer() -> None:
     st.markdown(
         f"""
-        <div class="site-footer">
+        <footer class="footer">
           <div>
-            <div class="footer-brand">Curcubites</div>
-            <div class="footer-sub">Chips de plátano horneados con cúrcuma · Colombia</div>
+            <h3 style="margin:0;font-family:'Playfair Display',Georgia,serif;font-size:2rem">Curcubites</h3>
+            <p style="margin:.35rem 0 0;color:rgba(255,246,230,.72)">Chips de plátano horneadas · Colombia</p>
           </div>
-          <div style="text-align:right">
-            <a class="footer-link" href="mailto:{DEFAULT_EMAIL}">{DEFAULT_EMAIL}</a>
-            <div class="footer-note">Pedidos por WhatsApp · Sin pago online</div>
+          <div>
+            <a href="mailto:{DEFAULT_EMAIL}">{DEFAULT_EMAIL}</a><br>
+            <span style="color:rgba(255,246,230,.62);font-size:.86rem">Instagram · TikTok · Blog · WhatsApp</span>
           </div>
-        </div>
+        </footer>
         """,
         unsafe_allow_html=True,
     )
 
 
-# ─── main ───────────────────────────────────────────────────────────────────
-
 def main() -> None:
     ensure_cart()
     inject_styles()
     products = load_products()
-    render_cart(products)
+    render_nav()
     render_hero()
     render_trust_strip()
     render_products(products)
-    render_story()
-    render_ingredients()
-    render_how_to_order()
+    render_brand_story()
+    render_moments()
+    render_blog()
     render_checkout(products)
-    render_faq()
     render_footer()
 
 
