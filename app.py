@@ -143,8 +143,8 @@ def inject_styles() -> None:
         #MainMenu, footer { visibility: hidden; height: 0; }
         [data-testid="stSidebar"] { display: none; }
         [data-testid="stMainBlockContainer"] {
-          max-width: 1220px;
-          padding: 1.15rem 1.6rem 4rem !important;
+          max-width: 1140px;
+          padding: 1rem 1.35rem 3.2rem !important;
         }
 
         .topbar {
@@ -211,14 +211,14 @@ def inject_styles() -> None:
         .hero {
           position: relative;
           overflow: hidden;
-          min-height: 78dvh;
+          min-height: 58dvh;
           border-radius: 8px;
           background:
             radial-gradient(circle at 82% 18%, rgba(217,154,34,.28), transparent 34%),
             linear-gradient(135deg, #0F1A0C 0%, #152411 58%, #245C2A 100%);
           background-size: cover;
           background-position: center;
-          padding: clamp(2rem, 5vw, 4.7rem);
+          padding: clamp(1.6rem, 4vw, 3.2rem);
           display: grid;
           grid-template-columns: 1.02fr 0.98fr;
           gap: clamp(1.4rem, 4vw, 4rem);
@@ -250,8 +250,8 @@ def inject_styles() -> None:
         }
         .hero h1 {
           font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(3.3rem, 8vw, 6.6rem);
-          line-height: .9;
+          font-size: clamp(2.8rem, 7vw, 5.4rem);
+          line-height: .94;
           color: var(--cream);
           margin: 0 0 1.1rem;
           letter-spacing: 0;
@@ -285,12 +285,14 @@ def inject_styles() -> None:
           padding: .7rem;
           box-shadow: 0 30px 80px rgba(0,0,0,.32);
           transform: rotate(2deg);
+          max-width: 380px;
+          margin-left: auto;
         }
         .hero-card-img img {
           border-radius: 6px;
           display: block;
           width: 100%;
-          aspect-ratio: 4 / 5;
+          aspect-ratio: 4 / 4.7;
           object-fit: cover;
         }
 
@@ -301,7 +303,7 @@ def inject_styles() -> None:
           border-top: 0;
           background: var(--paper);
           border-radius: 0 0 8px 8px;
-          margin-bottom: 3rem;
+          margin-bottom: 1.4rem;
         }
         .trust-item { padding: 1rem; border-right: 1px solid var(--line); }
         .trust-item:last-child { border-right: 0; }
@@ -309,8 +311,8 @@ def inject_styles() -> None:
         .trust-item span { display: block; color: var(--muted); font-size: .78rem; margin-top: .15rem; }
 
         .section-band {
-          margin: 3rem 0;
-          padding: clamp(2rem, 5vw, 4rem);
+          margin: 1.45rem 0;
+          padding: clamp(1.35rem, 3vw, 2.4rem);
           border-radius: 8px;
           background: var(--paper);
           border: 1px solid var(--line);
@@ -329,23 +331,28 @@ def inject_styles() -> None:
           font-family: 'Playfair Display', Georgia, serif;
           color: var(--ink);
           font-size: clamp(2.3rem, 5vw, 4.2rem);
-          line-height: .98;
+          line-height: 1;
           margin: 0;
         }
         .section-copy { color: var(--muted); max-width: 34rem; line-height: 1.65; margin: .7rem 0 0; }
 
         .product-shell {
           display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(320px, .86fr);
-          gap: clamp(1.4rem, 4vw, 3rem);
+          grid-template-columns: minmax(220px, .62fr) minmax(320px, 1fr);
+          gap: clamp(1rem, 3vw, 2rem);
           align-items: center;
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          padding: clamp(1rem, 2.5vw, 1.6rem);
         }
         .product-photo img {
           border-radius: 8px;
-          box-shadow: 0 20px 50px rgba(21,26,18,.16);
-          aspect-ratio: 4 / 5;
+          box-shadow: 0 14px 34px rgba(21,26,18,.14);
+          aspect-ratio: 1 / 1;
           object-fit: cover;
           width: 100%;
+          max-height: 330px;
         }
         .flavor-tag {
           display: inline-block;
@@ -360,12 +367,12 @@ def inject_styles() -> None:
         }
         .product-title {
           font-family: 'Playfair Display', Georgia, serif;
-          font-size: clamp(2.2rem, 5vw, 4rem);
-          line-height: .98;
+          font-size: clamp(2rem, 4vw, 3.15rem);
+          line-height: 1;
           margin: 0 0 .55rem;
         }
         .product-sub { color: var(--terracotta); font-weight: 800; font-style: italic; margin-bottom: .75rem; }
-        .product-desc { color: var(--muted); line-height: 1.7; margin-bottom: 1rem; }
+        .product-desc { color: var(--muted); line-height: 1.55; margin-bottom: .8rem; }
         .ingredient-pill {
           display: inline-block;
           background: var(--leaf);
@@ -376,7 +383,7 @@ def inject_styles() -> None:
           font-size: .8rem;
           margin-bottom: 1rem;
         }
-        .price { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: clamp(3rem, 7vw, 5.2rem); line-height: .88; }
+        .price { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-size: clamp(2.6rem, 6vw, 4.1rem); line-height: .9; }
         .price-note { color: var(--muted); font-size: .82rem; margin-bottom: 1rem; }
 
         div[data-baseweb="tab-list"] { gap: .55rem; border: 0 !important; margin-bottom: 1.6rem; }
@@ -423,7 +430,7 @@ def inject_styles() -> None:
           gap: 1rem;
         }
         .editorial-card {
-          min-height: 250px;
+          min-height: 190px;
           border-radius: 8px;
           padding: 1.35rem;
           background: var(--cream);
@@ -503,7 +510,7 @@ def inject_styles() -> None:
           background: var(--paper);
           border: 1px solid var(--line);
           border-radius: 8px;
-          padding: 1.25rem;
+          padding: 1.1rem;
         }
         .cart-card { position: sticky; top: 92px; }
         .cart-row {
@@ -561,6 +568,8 @@ def inject_styles() -> None:
           .social-rail { position: static; flex-direction: row; margin: .8rem 0 1rem; }
           .section-head { display: block; }
           .cart-card { position: static; }
+          .hero-card-img { margin: 0; max-width: 100%; }
+          .product-photo img { max-height: 280px; }
         }
 
         @media (max-width: 1180px) {
@@ -599,17 +608,17 @@ def render_nav() -> None:
           </div>
           <div class="navlinks">
             <a href="#inicio">Inicio</a>
-            <a href="#sabores">Sabores</a>
-            <a href="#marca">La marca</a>
+            <a href="#productos">Productos</a>
+            <a href="#carrito">Carrito</a>
             <a href="#blog">Blog</a>
-            <a href="#pedido" class="nav-cta">Pedir</a>
+            <a href="#carrito" class="nav-cta">Pedir</a>
           </div>
         </nav>
         <aside class="social-rail" aria-label="Redes sociales y blog">
           <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de Curcubites">IG</a>
           <a href="https://www.tiktok.com/search?q=curcubites_snack" target="_blank" rel="noopener" title="TikTok" aria-label="TikTok de Curcubites">TK</a>
           <a href="#blog" title="Blog" aria-label="Blog Curcubites">BL</a>
-          <a href="#pedido" title="Pedido" aria-label="Hacer pedido por WhatsApp">WA</a>
+          <a href="#carrito" title="Pedido" aria-label="Hacer pedido por WhatsApp">WA</a>
         </aside>
         """,
         unsafe_allow_html=True,
@@ -631,8 +640,8 @@ def render_hero() -> None:
                 Lo que sientes después, lo cambia todo.
               </p>
               <div class="hero-actions">
-                <a class="btn-main" href="#pedido">Pedir ahora</a>
-                <a class="btn-soft" href="#sabores">Ver sabores</a>
+                <a class="btn-main" href="#carrito">Pedir ahora</a>
+                <a class="btn-soft" href="#productos">Ver productos</a>
               </div>
             </div>
             """,
@@ -705,11 +714,11 @@ def render_problem_solution() -> None:
 def render_products(products: list[dict]) -> None:
     st.markdown(
         """
-        <section id="sabores" class="section-band">
+        <section id="productos" class="section-band">
           <div class="section-head">
             <div>
-              <div class="section-kicker">Nuestros sabores</div>
-              <h2 class="section-title">Elige el que va contigo.</h2>
+              <div class="section-kicker">Sección de productos</div>
+              <h2 class="section-title">Elige el sabor que va contigo.</h2>
             </div>
             <p class="section-copy">
               Tres perfiles para diferentes antojos. Armas tu carrito y eliges confirmación
@@ -916,10 +925,10 @@ def render_checkout(products: list[dict]) -> None:
     render_payment_mock_status()
     st.markdown(
         """
-        <section id="pedido" class="section-band">
+        <section id="carrito" class="section-band">
           <div class="section-head">
             <div>
-              <div class="section-kicker">Pedido</div>
+              <div class="section-kicker">Sección del carrito de compras</div>
               <h2 class="section-title">Carrito claro. Pago flexible.</h2>
             </div>
             <p class="section-copy">
@@ -1046,10 +1055,10 @@ def main() -> None:
     render_trust_strip()
     render_problem_solution()
     render_products(products)
+    render_checkout(products)
     render_brand_story()
     render_moments()
     render_blog()
-    render_checkout(products)
     render_footer()
 
 
