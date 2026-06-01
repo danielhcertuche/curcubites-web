@@ -110,9 +110,6 @@ def image_data_uri(path: Path) -> str:
     return f"data:{mime};base64,{encoded}"
 
 
-def payment_mock_url(method: str, total: int) -> str:
-    return f"?pago={quote(method)}&total={total}#pago-mock"
-
 
 def inject_styles() -> None:
     st.markdown(
@@ -626,38 +623,38 @@ def render_nav() -> None:
 
 
 def render_hero() -> None:
-    image = BASE_DIR / "imgenes_finales" / "c0661bdd-e0ce-42bf-93d8-ee2a60dd867c.jpeg"
-    st.markdown('<section id="inicio" class="hero">', unsafe_allow_html=True)
-    copy_col, image_col = st.columns([1.08, 0.92], vertical_alignment="center")
-    with copy_col:
-        st.markdown(
-            """
-            <div class="hero-copy">
-              <div class="eyebrow">Colombia · horneadas · sin freír</div>
-              <h1>Chips de plátano horneadas.</h1>
-              <p>
-                Crujientes, naturales y fáciles de pedir. Con cúrcuma y pimienta negra.
-                Lo que sientes después, lo cambia todo.
-              </p>
-              <div class="hero-actions">
-                <a class="btn-main" href="#carrito">Pedir ahora</a>
-                <a class="btn-soft" href="#productos">Ver productos</a>
-              </div>
+    img1 = BASE_DIR / "imgenes_finales" / "55d95c75-98ae-4418-a4df-c4689f51441c.jpeg"
+    img2 = BASE_DIR / "imgenes_finales" / "c0661bdd-e0ce-42bf-93d8-ee2a60dd867c.jpeg"
+    img_path = img1 if img1.exists() else img2
+    img_tag = (
+        f'<img src="{image_data_uri(img_path)}" '
+        f'alt="Curcubites — chips de plátano horneadas con cúrcuma" loading="eager">'
+        if img_path.exists()
+        else ""
+    )
+    # Pure HTML so CSS grid applies to both children correctly
+    st.markdown(
+        f"""
+        <section id="inicio" class="hero">
+          <div class="hero-copy">
+            <div class="eyebrow">Colombia · horneadas · sin freír</div>
+            <h1>Crujiente<br>real.</h1>
+            <p>
+              Chips de plátano con cúrcuma y pimienta negra.
+              El snack que no para de pedir.
+            </p>
+            <div class="hero-actions">
+              <a class="btn-main" href="#productos">Ver sabores →</a>
+              <a class="btn-soft" href="#carrito">Pedir ahora</a>
             </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with image_col:
-        if image.exists():
-            st.markdown(
-                f"""
-                <div class="hero-card-img">
-                  <img src="{image_data_uri(image)}" alt="Bolsa Curcubites Original con chips de plátano horneadas">
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-    st.markdown("</section>", unsafe_allow_html=True)
+          </div>
+          <div class="hero-visual">
+            <div class="hero-card-img">{img_tag}</div>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def render_trust_strip() -> None:
@@ -778,6 +775,27 @@ def render_products(products: list[dict]) -> None:
             st.markdown("</div>", unsafe_allow_html=True)
 
 
+def render_story() -> None:
+    st.markdown(
+        """
+        <section class="section-band alt" style="text-align:center">
+          <div style="max-width:620px;margin:0 auto;padding:1rem 0">
+            <div class="section-kicker">Nuestra historia</div>
+            <h2 class="section-title" style="margin-bottom:.85rem">
+              "Nació de un antojo.<br>Quedó de un hábito."
+            </h2>
+            <p style="color:var(--muted);font-size:1rem;line-height:1.72">
+              Curcubites empezó con una pregunta simple: ¿por qué el snack sabroso tiene que ser
+              ultra-procesado? Plátano, cúrcuma y pimienta negra.
+              Tres ingredientes reales, un resultado crujiente. Sin fritura, sin excusas.
+            </p>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_brand_story() -> None:
     st.markdown(
         """
@@ -877,112 +895,92 @@ def render_blog() -> None:
     )
 
 
-def render_payment_mock_status() -> None:
-    payment = st.query_params.get("pago")
-    total = st.query_params.get("total")
-    if not payment:
-        return
-    method = "Nequi" if payment == "nequi" else "Addi" if payment == "addi" else payment.title()
-    amount = money(int(total)) if total and total.isdigit() else "total del pedido"
-    st.markdown(
-        f"""
-        <section id="pago-mock" class="section-band alt">
-          <div class="section-head">
-            <div>
-              <div class="section-kicker">Pasarela mock</div>
-              <h2 class="section-title">Redirección a {method} simulada.</h2>
-            </div>
-            <p class="section-copy">
-              Ambiente demo para mostrar el flujo de pago online. No procesa dinero real.
-              Pedido por {amount}. En producción aquí se conectaría la pasarela real.
-            </p>
-          </div>
-          <div class="payment-grid">
-            <article class="payment-card featured">
-              <span class="mock-badge">Demo</span>
-              <h3>Estado del pago</h3>
-              <p>Pago pendiente de confirmación. Usa WhatsApp para cerrar el pedido piloto.</p>
-            </article>
-            <article class="payment-card">
-              <span class="mock-badge">Siguiente paso</span>
-              <h3>Confirmación</h3>
-              <p>El usuario vuelve a Curcubites y recibe instrucciones claras de entrega.</p>
-            </article>
-            <article class="payment-card">
-              <span class="mock-badge">Producción</span>
-              <h3>Integración real</h3>
-              <p>Se reemplaza este enlace por Nequi, Addi u otra pasarela cuando existan credenciales.</p>
-            </article>
-          </div>
-        </section>
-        """,
-        unsafe_allow_html=True,
-    )
-
-
 def render_checkout(products: list[dict]) -> None:
     items = cart_items(products)
-    render_payment_mock_status()
     st.markdown(
         """
         <section id="carrito" class="section-band">
           <div class="section-head">
             <div>
-              <div class="section-kicker">Sección del carrito de compras</div>
-              <h2 class="section-title">Carrito claro. Pago flexible.</h2>
+              <div class="section-kicker">Finaliza tu pedido</div>
+              <h2 class="section-title">Carrito y entrega.</h2>
             </div>
             <p class="section-copy">
-              El flujo está pensado como funnel de conversión: eliges sabores, completas datos
-              y confirmas por WhatsApp o por una pasarela mock tipo Nequi/Addi.
+              Sin pago online. Generamos el mensaje y lo confirmas directamente por WhatsApp.
             </p>
-          </div>
-          <div class="funnel-grid">
-            <article class="funnel-card"><span>1</span><h3>Elige</h3><p>Agrega sabores y cantidades al carrito.</p></article>
-            <article class="funnel-card"><span>2</span><h3>Completa</h3><p>Deja tus datos para coordinar entrega.</p></article>
-            <article class="funnel-card"><span>3</span><h3>Confirma</h3><p>WhatsApp, Nequi mock o Addi mock.</p></article>
           </div>
         </section>
         """,
         unsafe_allow_html=True,
     )
 
-    cart_col, form_col = st.columns([0.9, 1.1], gap="large")
+    cart_col, form_col = st.columns([0.85, 1.15], gap="large")
+
+    # ── CART ──────────────────────────────────────────────────────────────────
     with cart_col:
         st.markdown('<div class="cart-card">', unsafe_allow_html=True)
-        st.markdown("### Tu carrito")
+        st.markdown("#### 🛒 Tu carrito")
         if not items:
-            st.info("Agrega un sabor para iniciar el pedido.")
+            st.info("Aún no tienes productos. Elige un sabor arriba.")
         else:
             for item in items:
+                # Item row: name + subtotal
                 st.markdown(
                     f"""
                     <div class="cart-row">
-                      <div><strong>{item['name']}</strong><br><span>{money(item['price'])} x {item['qty']}</span></div>
+                      <div>
+                        <strong>{item['name']}</strong><br>
+                        <span style="font-size:.82rem;color:var(--muted)">{money(item['price'])} × {item['qty']}</span>
+                      </div>
                       <strong>{money(item['subtotal'])}</strong>
                     </div>
                     """,
                     unsafe_allow_html=True,
                 )
-                qty = st.number_input(
-                    f"Cantidad {item['name']}",
+                # Quantity + remove on same row
+                q_col, r_col = st.columns([1, 1])
+                qty = q_col.number_input(
+                    "Unidades",
                     min_value=0,
                     max_value=99,
                     value=int(item["qty"]),
                     step=1,
                     key=f"cart_qty_{item['id']}",
+                    label_visibility="collapsed",
                 )
                 update_quantity(item["id"], int(qty))
-                if st.button("Quitar", key=f"remove_{item['id']}"):
+                if r_col.button(
+                    "✕ Quitar",
+                    key=f"remove_{item['id']}",
+                    use_container_width=True,
+                ):
                     remove_from_cart(item["id"])
                     st.rerun()
-            st.markdown(f"## Total: {money(cart_total(cart_items(products)))}")
-            st.markdown('<div class="notice">Confirmación por WhatsApp o pago mock online.</div>', unsafe_allow_html=True)
+
+            total = cart_total(cart_items(products))
+            st.divider()
+            st.markdown(
+                f"""
+                <div style="display:flex;justify-content:space-between;align-items:center;
+                            font-size:1.15rem;font-weight:900;padding:.25rem 0">
+                  <span>Total</span>
+                  <span>{money(total)}</span>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            st.markdown(
+                '<div class="notice">💬 Confirmas por WhatsApp — sin pago online</div>',
+                unsafe_allow_html=True,
+            )
         st.markdown("</div>", unsafe_allow_html=True)
 
+    # ── FORM ──────────────────────────────────────────────────────────────────
     with form_col:
         st.markdown('<div class="checkout-card">', unsafe_allow_html=True)
+        st.markdown("#### 📝 Datos de entrega")
         if not items:
-            st.warning("El formulario se activa cuando tengas productos en el carrito.")
+            st.caption("Agrega productos al carrito para activar el formulario.")
             st.markdown("</div>", unsafe_allow_html=True)
             return
 
@@ -991,9 +989,15 @@ def render_checkout(products: list[dict]) -> None:
             name = c1.text_input("Nombre completo *")
             phone = c2.text_input("WhatsApp *", placeholder="+57 300 000 0000")
             city = c1.text_input("Ciudad *")
-            address = c2.text_input("Dirección de entrega *")
-            notes = st.text_area("Notas", placeholder="Barrio, horario o referencias de entrega.")
-            submitted = st.form_submit_button("Preparar mensaje de pedido", use_container_width=True)
+            address = c2.text_input("Dirección *")
+            notes = st.text_area(
+                "Notas",
+                placeholder="Barrio, horario preferido, referencias de entrega…",
+            )
+            submitted = st.form_submit_button(
+                "Preparar pedido →",
+                use_container_width=True,
+            )
 
         if submitted:
             missing = [
@@ -1007,24 +1011,27 @@ def render_checkout(products: list[dict]) -> None:
                 if not value.strip()
             ]
             if missing:
-                st.error("Faltan campos: " + ", ".join(missing))
+                st.error("Faltan: " + ", ".join(missing))
             else:
-                st.session_state.order_message = order_message(items, name, phone, city, address, notes)
+                st.session_state.order_message = order_message(
+                    items, name, phone, city, address, notes
+                )
 
         message = st.session_state.get("order_message")
         if message:
-            st.success("Pedido listo. Envíalo para confirmar disponibilidad y entrega.")
+            st.success("✓ Pedido listo. Envíalo para confirmar.")
             st.code(message, language="text")
             w_col, m_col = st.columns(2)
-            w_col.link_button("Enviar por WhatsApp", whatsapp_url(message), use_container_width=True)
-            m_col.link_button("Enviar por correo", mailto_url(message), use_container_width=True)
-
-        total = cart_total(cart_items(products))
-        st.markdown("### Pago online mock")
-        st.caption("Demo visual: no cobra dinero real. Sirve para mostrar cómo se vería la redirección.")
-        p1, p2 = st.columns(2)
-        p1.link_button("Pagar con Nequi mock", payment_mock_url("nequi", total), use_container_width=True)
-        p2.link_button("Pagar con Addi mock", payment_mock_url("addi", total), use_container_width=True)
+            w_col.link_button(
+                "📲 Enviar por WhatsApp",
+                whatsapp_url(message),
+                use_container_width=True,
+            )
+            m_col.link_button(
+                "✉️ Enviar por correo",
+                mailto_url(message),
+                use_container_width=True,
+            )
         st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -1053,10 +1060,9 @@ def main() -> None:
     render_nav()
     render_hero()
     render_trust_strip()
-    render_problem_solution()
     render_products(products)
+    render_story()
     render_checkout(products)
-    render_brand_story()
     render_moments()
     render_blog()
     render_footer()
