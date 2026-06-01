@@ -481,10 +481,10 @@ def render_nav() -> None:
           </div>
         </nav>
         <aside class="social-rail" aria-label="Redes sociales y blog">
-          <a href="https://instagram.com/curcubites" target="_blank" title="Instagram">IG</a>
-          <a href="https://www.tiktok.com/search?q=curcubites" target="_blank" title="TikTok">TK</a>
-          <a href="#blog" title="Blog">BL</a>
-          <a href="#pedido" title="Pedido">WA</a>
+          <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de Curcubites">IG</a>
+          <a href="https://www.tiktok.com/search?q=curcubites_snack" target="_blank" rel="noopener" title="TikTok" aria-label="TikTok de Curcubites">TK</a>
+          <a href="#blog" title="Blog" aria-label="Blog Curcubites">BL</a>
+          <a href="#pedido" title="Pedido" aria-label="Hacer pedido por WhatsApp">WA</a>
         </aside>
         """,
         unsafe_allow_html=True,
