@@ -160,11 +160,11 @@ def inject_styles() -> None:
           margin-bottom: 1.2rem;
         }
         .brand-lockup { display: flex; align-items: center; gap: 0.72rem; }
-        .brand-mark {
-          width: 38px; height: 38px; border-radius: 50%;
-          display: grid; place-items: center;
-          background: var(--olive); color: var(--cream);
-          font-weight: 900; font-family: 'Playfair Display', Georgia, serif;
+        .brand-logo {
+          width: 40px; height: 40px; border-radius: 50%;
+          object-fit: cover;
+          border: 1.5px solid var(--line);
+          flex-shrink: 0;
         }
         .brand-name { font-weight: 900; letter-spacing: 0; line-height: 1; }
         .brand-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.12rem; }
@@ -189,6 +189,7 @@ def inject_styles() -> None:
         }
         .nav-cta { background: var(--green) !important; color: var(--cream) !important; }
 
+        /* ── social rail ── */
         .social-rail {
           position: fixed; right: 1rem; top: 35%; z-index: 30;
           display: flex; flex-direction: column; gap: 0.55rem;
@@ -200,10 +201,47 @@ def inject_styles() -> None:
           color: var(--ink) !important; text-decoration: none !important;
           font-size: 0.72rem; font-weight: 900;
           box-shadow: 0 12px 32px rgba(15, 26, 12, 0.12);
-          touch-action: manipulation;
+          touch-action: manipulation; position: relative;
           transition: background 180ms ease, color 180ms ease, transform 180ms ease;
         }
         .social-rail a:hover { background: var(--green); color: var(--cream) !important; transform: translateX(-2px); }
+
+        /* ── cart rail button — fixed, stacked below social-rail ── */
+        .cart-rail {
+          position: fixed;
+          right: 1rem;
+          /* sits below the 4 social rail buttons: top 35% + 4*(46px+0.55rem gap) ≈ + 230px */
+          top: calc(35% + 230px);
+          z-index: 30;
+        }
+        .cart-rail a {
+          width: 46px; height: 46px; border-radius: 50%;
+          display: grid; place-items: center;
+          background: var(--olive); border: 2px solid var(--olive);
+          color: var(--cream) !important; text-decoration: none !important;
+          box-shadow: 0 12px 32px rgba(15, 26, 12, 0.28);
+          touch-action: manipulation; position: relative;
+          transition: background 180ms ease, transform 180ms ease;
+        }
+        .cart-rail a:hover { background: var(--green); border-color: var(--green); transform: translateX(-2px); }
+        .cart-badge {
+          position: absolute;
+          top: -4px; right: -4px;
+          min-width: 20px; height: 20px;
+          background: var(--terracotta);
+          color: #fff;
+          font-size: .65rem; font-weight: 900;
+          border-radius: 999px;
+          display: grid; place-items: center;
+          line-height: 1; padding: 0 .3rem;
+          border: 2px solid var(--paper);
+          pointer-events: none;
+          animation: pop-in 200ms ease;
+        }
+        @keyframes pop-in {
+          from { transform: scale(0); opacity: 0; }
+          to   { transform: scale(1); opacity: 1; }
+        }
 
         .hero {
           position: relative;
@@ -657,7 +695,8 @@ def inject_styles() -> None:
           .hero, .product-shell { grid-template-columns: 1fr; min-height: auto; }
           .trust-strip, .editorial-grid, .blog-grid, .problem-grid, .funnel-grid, .payment-grid { grid-template-columns: 1fr; }
           .trust-item { border-right: 0; border-bottom: 1px solid var(--line); }
-          .social-rail { position: static; flex-direction: row; margin: .8rem 0 1rem; }
+          .social-rail { position: static; flex-direction: row; margin: .8rem 0 .5rem; }
+          .cart-rail { position: static; margin: 0 0 1rem; }
           .section-head { display: block; }
           .cart-card { position: static; }
           .hero-card-img { margin: 0; max-width: 100%; }
@@ -687,12 +726,33 @@ def inject_styles() -> None:
     )
 
 
-def render_nav() -> None:
+CART_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" '
+    'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
+    '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>'
+    '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>'
+    '</svg>'
+)
+
+
+def render_nav(cart_count: int = 0, logo_uri: str = "") -> None:
+    logo_html = (
+        f'<img class="brand-logo" src="{logo_uri}" alt="Logo Curcubites">'
+        if logo_uri
+        else '<div class="brand-mark" style="width:40px;height:40px;border-radius:50%;'
+             'background:var(--olive);color:var(--cream);display:grid;place-items:center;'
+             'font-family:\'Playfair Display\',serif;font-weight:900;font-size:1.1rem">C</div>'
+    )
+    badge_html = (
+        f'<span class="cart-badge">{cart_count}</span>'
+        if cart_count > 0
+        else ""
+    )
     st.markdown(
-        """
+        f"""
         <nav class="topbar">
           <div class="brand-lockup">
-            <div class="brand-mark">C</div>
+            {logo_html}
             <div>
               <div class="brand-name">Curcubites</div>
               <div class="brand-sub">Chips de plátano horneadas</div>
@@ -707,11 +767,20 @@ def render_nav() -> None:
           </div>
         </nav>
         <aside class="social-rail" aria-label="Redes sociales y blog">
-          <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener" title="Instagram" aria-label="Instagram de Curcubites">IG</a>
-          <a href="https://www.tiktok.com/search?q=curcubites_snack" target="_blank" rel="noopener" title="TikTok" aria-label="TikTok de Curcubites">TK</a>
+          <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener"
+             title="Instagram" aria-label="Instagram de Curcubites">IG</a>
+          <a href="https://www.tiktok.com/search?q=curcubites_snack" target="_blank" rel="noopener"
+             title="TikTok" aria-label="TikTok de Curcubites">TK</a>
           <a href="#blog" title="Blog" aria-label="Blog Curcubites">BL</a>
-          <a href="#carrito" title="Pedido" aria-label="Hacer pedido por WhatsApp">WA</a>
+          <a href="https://wa.me/?text=Hola%2C+quiero+pedir+Curcubites" target="_blank" rel="noopener"
+             title="WhatsApp" aria-label="Contactar por WhatsApp">WA</a>
         </aside>
+        <div class="cart-rail" aria-label="Carrito de compras">
+          <a href="#carrito" title="Ir al carrito" aria-label="Ir al carrito de compras">
+            {CART_SVG}
+            {badge_html}
+          </a>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -1212,7 +1281,15 @@ def main() -> None:
     ensure_cart()
     inject_styles()
     products = load_products()
-    render_nav()
+
+    # Cart count from session state (no products lookup needed at this point)
+    cart_count = sum(st.session_state.get("cart", {}).values())
+
+    # Logo — cached base64 encoding
+    logo_path = BASE_DIR / "imgenes_finales" / "logo_curcubites.jpeg"
+    logo_uri = image_data_uri(str(logo_path)) if logo_path.exists() else ""
+
+    render_nav(cart_count=cart_count, logo_uri=logo_uri)
     render_hero()
     render_trust_strip()
     render_products(products)
