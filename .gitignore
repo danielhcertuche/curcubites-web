@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.streamlit/secrets.toml
+*.pdf
+*.jpeg
+CURCUBITES_*.md
+generate_*.py
+curcubites_concept_*_original*.jpg
+curcubites_concept_2_*.jpg
+curcubites_concept_3_*.jpg
+curcubites_story_*.jpg
+ig_posts/story_*.jpg
+ig_posts/studio_*.jpg
