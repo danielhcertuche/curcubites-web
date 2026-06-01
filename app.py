@@ -1,5 +1,6 @@
 import json
 import os
+import base64
 from pathlib import Path
 from urllib.parse import quote
 
@@ -102,6 +103,17 @@ def mailto_url(message: str) -> str:
     return f"mailto:{email}?subject={quote('Pedido Curcubites')}&body={quote(message)}"
 
 
+def image_data_uri(path: Path) -> str:
+    suffix = path.suffix.lower()
+    mime = "image/png" if suffix == ".png" else "image/jpeg"
+    encoded = base64.b64encode(path.read_bytes()).decode("ascii")
+    return f"data:{mime};base64,{encoded}"
+
+
+def payment_mock_url(method: str, total: int) -> str:
+    return f"?pago={quote(method)}&total={total}#pago-mock"
+
+
 def inject_styles() -> None:
     st.markdown(
         """
@@ -123,7 +135,7 @@ def inject_styles() -> None:
           --muted: #50564C;
         }
 
-        html { scroll-behavior: smooth; }
+        html { scroll-behavior: smooth; overscroll-behavior: contain; }
         .stApp { background: var(--cream); color: var(--ink); }
         html, body, [class*="css"] { font-family: Inter, system-ui, sans-serif; }
 
@@ -164,8 +176,20 @@ def inject_styles() -> None:
           color: var(--ink) !important; text-decoration: none !important;
           font-size: 0.84rem; font-weight: 800;
           padding: 0.48rem 0.72rem; border-radius: 999px;
+          min-height: 44px;
+          display: inline-flex;
+          align-items: center;
+          touch-action: manipulation;
+          transition: background 180ms ease, color 180ms ease, transform 180ms ease;
         }
-        .navlinks a:hover { background: var(--leaf); }
+        .navlinks a:hover { background: var(--leaf); transform: translateY(-1px); }
+        .navlinks a:focus-visible,
+        .social-rail a:focus-visible,
+        .btn-main:focus-visible,
+        .btn-soft:focus-visible {
+          outline: 3px solid var(--turmeric);
+          outline-offset: 3px;
+        }
         .nav-cta { background: var(--green) !important; color: var(--cream) !important; }
 
         .social-rail {
@@ -179,17 +203,19 @@ def inject_styles() -> None:
           color: var(--ink) !important; text-decoration: none !important;
           font-size: 0.72rem; font-weight: 900;
           box-shadow: 0 12px 32px rgba(15, 26, 12, 0.12);
+          touch-action: manipulation;
+          transition: background 180ms ease, color 180ms ease, transform 180ms ease;
         }
-        .social-rail a:hover { background: var(--green); color: var(--cream) !important; }
+        .social-rail a:hover { background: var(--green); color: var(--cream) !important; transform: translateX(-2px); }
 
         .hero {
           position: relative;
           overflow: hidden;
-          min-height: 78vh;
+          min-height: 78dvh;
           border-radius: 8px;
           background:
-            linear-gradient(90deg, rgba(15,26,12,.94), rgba(15,26,12,.72)),
-            url('https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=1800&q=80');
+            radial-gradient(circle at 82% 18%, rgba(217,154,34,.28), transparent 34%),
+            linear-gradient(135deg, #0F1A0C 0%, #152411 58%, #245C2A 100%);
           background-size: cover;
           background-position: center;
           padding: clamp(2rem, 5vw, 4.7rem);
@@ -246,9 +272,12 @@ def inject_styles() -> None:
           text-decoration: none !important;
           font-weight: 900;
           font-size: .92rem;
+          touch-action: manipulation;
+          transition: transform 180ms ease, background 180ms ease, color 180ms ease;
         }
         .btn-main { background: var(--turmeric); color: var(--olive) !important; }
         .btn-soft { border: 1px solid rgba(255,246,230,.32); color: var(--cream) !important; background: rgba(255,255,255,.08); }
+        .btn-main:hover, .btn-soft:hover { transform: translateY(-2px); }
         .hero-card-img {
           background: rgba(255,246,230,.92);
           border: 1px solid rgba(255,246,230,.45);
@@ -257,7 +286,13 @@ def inject_styles() -> None:
           box-shadow: 0 30px 80px rgba(0,0,0,.32);
           transform: rotate(2deg);
         }
-        .hero-card-img img { border-radius: 6px; display: block; width: 100%; }
+        .hero-card-img img {
+          border-radius: 6px;
+          display: block;
+          width: 100%;
+          aspect-ratio: 4 / 5;
+          object-fit: cover;
+        }
 
         .trust-strip {
           display: grid;
@@ -305,7 +340,13 @@ def inject_styles() -> None:
           gap: clamp(1.4rem, 4vw, 3rem);
           align-items: center;
         }
-        .product-photo img { border-radius: 8px; box-shadow: 0 20px 50px rgba(21,26,18,.16); }
+        .product-photo img {
+          border-radius: 8px;
+          box-shadow: 0 20px 50px rgba(21,26,18,.16);
+          aspect-ratio: 4 / 5;
+          object-fit: cover;
+          width: 100%;
+        }
         .flavor-tag {
           display: inline-block;
           color: var(--cream);
@@ -367,8 +408,13 @@ def inject_styles() -> None:
           color: var(--cream);
           min-height: 3rem;
           font-weight: 900;
+          touch-action: manipulation;
         }
         div[data-testid="stButton"] > button:hover { background: var(--olive); border-color: var(--olive); color: var(--cream); }
+        div[data-testid="stButton"] > button:focus-visible {
+          outline: 3px solid var(--turmeric) !important;
+          outline-offset: 3px !important;
+        }
         div[data-testid="stLinkButton"] > a { border-radius: 999px; font-weight: 900; }
 
         .editorial-grid {
@@ -409,6 +455,49 @@ def inject_styles() -> None:
         .blog-card span { color: var(--green); font-size: .7rem; font-weight: 900; letter-spacing: 1.6px; text-transform: uppercase; }
         .blog-card h3 { margin: .5rem 0; font-size: 1.12rem; }
         .blog-card p { color: var(--muted); font-size: .9rem; line-height: 1.55; }
+        .blog-card a {
+          color: var(--green) !important;
+          font-weight: 900;
+          text-decoration: none !important;
+        }
+
+        .problem-grid,
+        .funnel-grid,
+        .payment-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1rem;
+        }
+        .problem-card,
+        .funnel-card,
+        .payment-card {
+          border: 1px solid var(--line);
+          border-radius: 8px;
+          background: var(--paper);
+          padding: 1.25rem;
+        }
+        .problem-card.problem { border-top: 6px solid var(--terracotta); }
+        .problem-card.process { border-top: 6px solid var(--turmeric); }
+        .problem-card.solution { border-top: 6px solid var(--green); }
+        .problem-card span,
+        .funnel-card span {
+          display: inline-flex;
+          width: 34px;
+          height: 34px;
+          border-radius: 999px;
+          align-items: center;
+          justify-content: center;
+          background: var(--leaf);
+          color: var(--green);
+          font-weight: 900;
+          margin-bottom: .8rem;
+        }
+        .problem-card h3,
+        .funnel-card h3,
+        .payment-card h3 { margin: 0 0 .45rem; }
+        .problem-card p,
+        .funnel-card p,
+        .payment-card p { color: var(--muted); line-height: 1.55; font-size: .92rem; margin: 0; }
 
         .cart-card, .checkout-card {
           background: var(--paper);
@@ -416,6 +505,7 @@ def inject_styles() -> None:
           border-radius: 8px;
           padding: 1.25rem;
         }
+        .cart-card { position: sticky; top: 92px; }
         .cart-row {
           display: flex;
           justify-content: space-between;
@@ -431,6 +521,22 @@ def inject_styles() -> None:
           padding: .85rem 1rem;
           font-weight: 800;
           margin: 1rem 0;
+        }
+        .payment-card.featured {
+          background: var(--olive);
+          color: var(--cream);
+          border-color: var(--olive);
+        }
+        .payment-card.featured p { color: rgba(255,246,230,.72); }
+        .mock-badge {
+          display: inline-block;
+          border-radius: 999px;
+          background: var(--leaf);
+          color: var(--green);
+          padding: .28rem .7rem;
+          font-size: .72rem;
+          font-weight: 900;
+          margin-bottom: .7rem;
         }
         .footer {
           margin-top: 3rem;
@@ -450,10 +556,29 @@ def inject_styles() -> None:
           .topbar { position: relative; align-items: flex-start; }
           .navlinks { justify-content: flex-start; }
           .hero, .product-shell { grid-template-columns: 1fr; min-height: auto; }
-          .trust-strip, .editorial-grid, .blog-grid { grid-template-columns: 1fr; }
+          .trust-strip, .editorial-grid, .blog-grid, .problem-grid, .funnel-grid, .payment-grid { grid-template-columns: 1fr; }
           .trust-item { border-right: 0; border-bottom: 1px solid var(--line); }
           .social-rail { position: static; flex-direction: row; margin: .8rem 0 1rem; }
           .section-head { display: block; }
+          .cart-card { position: static; }
+        }
+
+        @media (max-width: 1180px) {
+          .social-rail {
+            right: .45rem;
+            top: auto;
+            bottom: .8rem;
+            flex-direction: row;
+          }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          html { scroll-behavior: auto; }
+          *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+          }
         }
         </style>
         """,
@@ -500,14 +625,14 @@ def render_hero() -> None:
             """
             <div class="hero-copy">
               <div class="eyebrow">Colombia · horneadas · sin freír</div>
-              <h1>El snack que se ve bien y sabe mejor.</h1>
+              <h1>Chips de plátano horneadas.</h1>
               <p>
-                Chips de plátano horneadas con cúrcuma y pimienta negra.
-                Una marca pensada para antojos reales, momentos activos y pedidos fáciles por WhatsApp.
+                Crujientes, naturales y fáciles de pedir. Con cúrcuma y pimienta negra.
+                Lo que sientes después, lo cambia todo.
               </p>
               <div class="hero-actions">
-                <a class="btn-main" href="#sabores">Ver sabores</a>
-                <a class="btn-soft" href="#marca">Conocer la marca</a>
+                <a class="btn-main" href="#pedido">Pedir ahora</a>
+                <a class="btn-soft" href="#sabores">Ver sabores</a>
               </div>
             </div>
             """,
@@ -515,9 +640,14 @@ def render_hero() -> None:
         )
     with image_col:
         if image.exists():
-            st.markdown('<div class="hero-card-img">', unsafe_allow_html=True)
-            st.image(str(image), use_container_width=True)
-            st.markdown("</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"""
+                <div class="hero-card-img">
+                  <img src="{image_data_uri(image)}" alt="Bolsa Curcubites Original con chips de plátano horneadas">
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
     st.markdown("</section>", unsafe_allow_html=True)
 
 
@@ -525,11 +655,48 @@ def render_trust_strip() -> None:
     st.markdown(
         """
         <div class="trust-strip">
-          <div class="trust-item"><strong>Horneadas</strong><span>No fritas, sin aceite extra.</span></div>
+          <div class="trust-item"><strong>Horneadas</strong><span>No fritas.</span></div>
           <div class="trust-item"><strong>Ingredientes claros</strong><span>Plátano, cúrcuma y pimienta.</span></div>
-          <div class="trust-item"><strong>Compra simple</strong><span>Carrito y confirmación por WhatsApp.</span></div>
+          <div class="trust-item"><strong>Compra flexible</strong><span>WhatsApp o pago mock online.</span></div>
           <div class="trust-item"><strong>Marca local</strong><span>Diseñada para Colombia.</span></div>
         </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_problem_solution() -> None:
+    st.markdown(
+        """
+        <section class="section-band alt">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Necesidad · problema · solución</div>
+              <h2 class="section-title">Crujiente sin volver a lo de siempre.</h2>
+            </div>
+            <p class="section-copy">
+              La estrategia de marca parte de una tensión simple: queremos algo rico y práctico,
+              pero no siempre queremos caer en frituras o snacks sin historia.
+            </p>
+          </div>
+          <div class="problem-grid">
+            <article class="problem-card problem">
+              <span>1</span>
+              <h3>Necesidad</h3>
+              <p>Un antojo rápido, fácil de llevar y con buen sabor para la U, oficina, gym o planes al aire libre.</p>
+            </article>
+            <article class="problem-card process">
+              <span>2</span>
+              <h3>Problema</h3>
+              <p>La mayoría de opciones crujientes se sienten pesadas, grasosas o poco alineadas con un estilo de vida consciente.</p>
+            </article>
+            <article class="problem-card solution">
+              <span>3</span>
+              <h3>Solución</h3>
+              <p>Curcubites: plátano horneado con cúrcuma y pimienta negra. Crujido real, ingredientes claros y pedido simple.</p>
+            </article>
+          </div>
+        </section>
         """,
         unsafe_allow_html=True,
     )
@@ -545,8 +712,8 @@ def render_products(products: list[dict]) -> None:
               <h2 class="section-title">Elige el que va contigo.</h2>
             </div>
             <p class="section-copy">
-              Tres perfiles para diferentes antojos. Sin pago online: armas tu carrito
-              y confirmamos disponibilidad y entrega por WhatsApp.
+              Tres perfiles para diferentes antojos. Armas tu carrito y eliges confirmación
+              por WhatsApp o pasarela mock online.
             </p>
           </div>
         </section>
@@ -562,9 +729,14 @@ def render_products(products: list[dict]) -> None:
             image_col, info_col = st.columns([1.05, 0.95], gap="large", vertical_alignment="center")
             with image_col:
                 if img_path.exists():
-                    st.markdown('<div class="product-photo">', unsafe_allow_html=True)
-                    st.image(str(img_path), use_container_width=True)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                    st.markdown(
+                        f"""
+                        <div class="product-photo">
+                          <img src="{image_data_uri(img_path)}" alt="{product['name']}">
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
             with info_col:
                 st.markdown(
                     f"""
@@ -574,7 +746,7 @@ def render_products(products: list[dict]) -> None:
                     <p class="product-desc">{product['description']}</p>
                     <span class="ingredient-pill">{product['ingredients']}</span>
                     <div class="price">{money(int(product['price']))}</div>
-                    <div class="price-note">por bolsa · 13 g · pedido por WhatsApp</div>
+                    <div class="price-note">por bolsa · 13 g · WhatsApp o pago mock online</div>
                     """,
                     unsafe_allow_html=True,
                 )
@@ -604,26 +776,25 @@ def render_brand_story() -> None:
           <div class="section-head">
             <div>
               <div class="section-kicker">Marca con intención</div>
-              <h2 class="section-title">No vendemos bolsitas. Construimos antojos memorables.</h2>
+              <h2 class="section-title">Coherencia de marca, compra simple y contenido que sostiene.</h2>
             </div>
             <p class="section-copy">
-              Curcubites combina producto, empaque y experiencia digital.
-              La idea es sencilla: que el snack se entienda rápido, se vea apetitoso
-              y sea fácil de pedir desde cualquier celular.
+              La estrategia cruza las 4C: coherencia en promesa, consistencia visual,
+              continuidad de contenidos y complementariedad entre web, Instagram, TikTok y WhatsApp.
             </p>
           </div>
           <div class="editorial-grid">
             <article class="editorial-card dark">
-              <h3>Natural sin verse aburrido.</h3>
-              <p>El verde comunica origen. El dorado de la cúrcuma abre apetito. El contraste oscuro da presencia premium.</p>
+              <h3>Coherencia</h3>
+              <p>Misma promesa en web, empaque y redes: plátano horneado con cúrcuma y pimienta negra.</p>
             </article>
             <article class="editorial-card">
-              <h3>Pedido sin fricción.</h3>
-              <p>La página lleva al usuario del sabor al WhatsApp sin crear cuentas, pagos complejos ni pasos innecesarios.</p>
+              <h3>Consistencia</h3>
+              <p>Verde natural, dorado cúrcuma y tono fresco para que la marca se reconozca rápido.</p>
             </article>
             <article class="editorial-card">
-              <h3>Contenido que vende.</h3>
-              <p>Sabores, momentos de consumo, ingredientes y blog trabajan juntos para que la marca se sienta seria.</p>
+              <h3>Complementariedad</h3>
+              <p>La web vende, Instagram educa, TikTok atrae y WhatsApp cierra la conversación.</p>
             </article>
           </div>
         </section>
@@ -676,16 +847,62 @@ def render_blog() -> None:
               <span>Ingredientes</span>
               <h3>Por qué usamos cúrcuma y pimienta negra</h3>
               <p>Una dupla de sabor intenso, color dorado y personalidad propia en cada mordisco.</p>
+              <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener">Ver contenido</a>
             </article>
             <article class="blog-card">
               <span>Estilo de vida</span>
               <h3>Snacks para llevar a la U, oficina o gimnasio</h3>
               <p>Pequeños rituales para resolver el antojo sin complicarse la vida.</p>
+              <a href="https://www.instagram.com/curcubites_snack/" target="_blank" rel="noopener">Ir a Instagram</a>
             </article>
             <article class="blog-card">
               <span>Marca</span>
               <h3>Cómo se diseñó la identidad de Curcubites</h3>
               <p>Color, empaque y tono pensados para vender desde la primera mirada.</p>
+              <a href="#marca">Leer enfoque</a>
+            </article>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def render_payment_mock_status() -> None:
+    payment = st.query_params.get("pago")
+    total = st.query_params.get("total")
+    if not payment:
+        return
+    method = "Nequi" if payment == "nequi" else "Addi" if payment == "addi" else payment.title()
+    amount = money(int(total)) if total and total.isdigit() else "total del pedido"
+    st.markdown(
+        f"""
+        <section id="pago-mock" class="section-band alt">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">Pasarela mock</div>
+              <h2 class="section-title">Redirección a {method} simulada.</h2>
+            </div>
+            <p class="section-copy">
+              Ambiente demo para mostrar el flujo de pago online. No procesa dinero real.
+              Pedido por {amount}. En producción aquí se conectaría la pasarela real.
+            </p>
+          </div>
+          <div class="payment-grid">
+            <article class="payment-card featured">
+              <span class="mock-badge">Demo</span>
+              <h3>Estado del pago</h3>
+              <p>Pago pendiente de confirmación. Usa WhatsApp para cerrar el pedido piloto.</p>
+            </article>
+            <article class="payment-card">
+              <span class="mock-badge">Siguiente paso</span>
+              <h3>Confirmación</h3>
+              <p>El usuario vuelve a Curcubites y recibe instrucciones claras de entrega.</p>
+            </article>
+            <article class="payment-card">
+              <span class="mock-badge">Producción</span>
+              <h3>Integración real</h3>
+              <p>Se reemplaza este enlace por Nequi, Addi u otra pasarela cuando existan credenciales.</p>
             </article>
           </div>
         </section>
@@ -696,17 +913,24 @@ def render_blog() -> None:
 
 def render_checkout(products: list[dict]) -> None:
     items = cart_items(products)
+    render_payment_mock_status()
     st.markdown(
         """
         <section id="pedido" class="section-band">
           <div class="section-head">
             <div>
               <div class="section-kicker">Pedido</div>
-              <h2 class="section-title">Finaliza por WhatsApp.</h2>
+              <h2 class="section-title">Carrito claro. Pago flexible.</h2>
             </div>
             <p class="section-copy">
-              Sin pago online. Preparas el mensaje, lo envías y coordinamos entrega.
+              El flujo está pensado como funnel de conversión: eliges sabores, completas datos
+              y confirmas por WhatsApp o por una pasarela mock tipo Nequi/Addi.
             </p>
+          </div>
+          <div class="funnel-grid">
+            <article class="funnel-card"><span>1</span><h3>Elige</h3><p>Agrega sabores y cantidades al carrito.</p></article>
+            <article class="funnel-card"><span>2</span><h3>Completa</h3><p>Deja tus datos para coordinar entrega.</p></article>
+            <article class="funnel-card"><span>3</span><h3>Confirma</h3><p>WhatsApp, Nequi mock o Addi mock.</p></article>
           </div>
         </section>
         """,
@@ -743,7 +967,7 @@ def render_checkout(products: list[dict]) -> None:
                     remove_from_cart(item["id"])
                     st.rerun()
             st.markdown(f"## Total: {money(cart_total(cart_items(products)))}")
-            st.markdown('<div class="notice">Confirmación y entrega por WhatsApp.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="notice">Confirmación por WhatsApp o pago mock online.</div>', unsafe_allow_html=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
     with form_col:
@@ -785,6 +1009,13 @@ def render_checkout(products: list[dict]) -> None:
             w_col, m_col = st.columns(2)
             w_col.link_button("Enviar por WhatsApp", whatsapp_url(message), use_container_width=True)
             m_col.link_button("Enviar por correo", mailto_url(message), use_container_width=True)
+
+        total = cart_total(cart_items(products))
+        st.markdown("### Pago online mock")
+        st.caption("Demo visual: no cobra dinero real. Sirve para mostrar cómo se vería la redirección.")
+        p1, p2 = st.columns(2)
+        p1.link_button("Pagar con Nequi mock", payment_mock_url("nequi", total), use_container_width=True)
+        p2.link_button("Pagar con Addi mock", payment_mock_url("addi", total), use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
 
@@ -813,6 +1044,7 @@ def main() -> None:
     render_nav()
     render_hero()
     render_trust_strip()
+    render_problem_solution()
     render_products(products)
     render_brand_story()
     render_moments()
