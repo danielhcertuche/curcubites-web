@@ -573,11 +573,27 @@ def inject_styles() -> None:
           font-size: .73rem; color: rgba(255,246,230,.5); margin-top: .12rem;
         }
 
-        /* ── product-info inside product-shell ── */
-        .product-info { display: flex; flex-direction: column; }
-        .product-cta-row {
-          display: flex; gap: .75rem; align-items: center; margin-top: 1rem; flex-wrap: wrap;
+        /* ── product-info — flex column, children DON'T stretch full width ── */
+        .product-info {
+          display: flex; flex-direction: column; align-items: flex-start;
         }
+        /* compact product shell */
+        .product-shell {
+          padding: clamp(.8rem, 2vw, 1.2rem) !important;
+          gap: clamp(.75rem, 2vw, 1.5rem) !important;
+        }
+        .product-photo img {
+          max-height: 280px !important;
+        }
+        .product-title { font-size: clamp(1.6rem, 3vw, 2.4rem) !important; margin-bottom: .3rem !important; }
+        .price { font-size: clamp(2rem, 4vw, 3rem) !important; }
+        .product-sub { margin-bottom: .45rem !important; }
+        .product-desc { margin-bottom: .55rem !important; font-size: .9rem !important; }
+        .ingredient-pill { margin-bottom: .65rem !important; padding: .35rem .75rem !important; }
+        .price-note { margin-bottom: .5rem !important; }
+
+        /* product tabs — compact spacing */
+        div[data-baseweb="tab-list"] { margin-bottom: .85rem !important; }
 
         /* ── cursor pointer everywhere interactive ── */
         button, [role="button"], a, label[for],
@@ -589,10 +605,49 @@ def inject_styles() -> None:
         /* ── smooth transitions on interactive elements ── */
         a, button { transition: background 180ms ease, color 180ms ease, opacity 180ms ease, transform 180ms ease; }
 
-        /* ── product section: controls row below shell ── */
-        .product-controls {
-          display: flex; align-items: center; gap: .75rem;
-          margin-top: .85rem; padding: 0 .5rem;
+        /* ── qty input: center number text ── */
+        [data-testid="stNumberInput"] input { text-align: center !important; }
+
+        /* ── product controls row below shell ── */
+        .product-controls-row {
+          display: flex; align-items: center; gap: .65rem; margin-top: .6rem;
+        }
+
+        /* ── team section ── */
+        .team-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 1.2rem;
+        }
+        .team-card {
+          background: var(--paper);
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          padding: 1.6rem 1.35rem 1.4rem;
+          text-align: center;
+        }
+        .team-avatar {
+          width: 56px; height: 56px; border-radius: 50%;
+          display: grid; place-items: center; margin: 0 auto 1rem;
+          font-family: 'Playfair Display', Georgia, serif;
+          font-weight: 900; font-size: 1.3rem; color: var(--cream);
+        }
+        .team-name {
+          font-weight: 900; font-size: 1.05rem; margin: 0 0 .22rem;
+          font-family: 'Playfair Display', Georgia, serif;
+          color: var(--ink);
+        }
+        .team-role {
+          font-size: .78rem; font-weight: 700; color: var(--green);
+          text-transform: uppercase; letter-spacing: 1px; margin-bottom: .85rem;
+        }
+        .team-skills {
+          display: flex; flex-wrap: wrap; gap: .4rem; justify-content: center;
+        }
+        .team-skill-tag {
+          background: var(--leaf); color: var(--green);
+          border-radius: 999px; padding: .22rem .65rem;
+          font-size: .74rem; font-weight: 700;
         }
 
         @media (max-width: 900px) {
@@ -648,7 +703,7 @@ def render_nav() -> None:
             <a href="#productos">Productos</a>
             <a href="#carrito">Carrito</a>
             <a href="#blog">Blog</a>
-            <a href="#carrito" class="nav-cta">Pedir</a>
+            <a href="#productos" class="nav-cta">Pedir</a>
           </div>
         </nav>
         <aside class="social-rail" aria-label="Redes sociales y blog">
@@ -691,7 +746,7 @@ def render_hero() -> None:
             </p>
             <div class="hero-actions">
               <a class="btn-main" href="#productos">Ver sabores</a>
-              <a class="btn-soft" href="#carrito">Pedir ahora</a>
+              <a class="btn-soft" href="#productos">Pedir ahora</a>
             </div>
           </div>
           <div class="hero-visual">
@@ -757,17 +812,13 @@ def render_problem_solution() -> None:
 def render_products(products: list[dict]) -> None:
     st.markdown(
         """
-        <section id="productos" class="section-band">
-          <div class="section-head">
-            <div>
-              <div class="section-kicker">Nuestros sabores</div>
-              <h2 class="section-title">Elige el sabor que va contigo.</h2>
-            </div>
-            <p class="section-copy">
-              Original, Picante o Dulce. 13 g por bolsa, pedido por WhatsApp.
-            </p>
-          </div>
-        </section>
+        <div id="productos" style="padding:.5rem 0 .75rem">
+          <div class="section-kicker">Nuestros sabores</div>
+          <h2 class="section-title" style="margin:.2rem 0 .35rem">Elige el sabor que va contigo.</h2>
+          <p style="color:var(--muted);font-size:.94rem;margin:0">
+            Original, Picante o Dulce &mdash; 13 g por bolsa, pedido por WhatsApp.
+          </p>
+        </div>
         """,
         unsafe_allow_html=True,
     )
@@ -966,7 +1017,7 @@ def render_checkout(products: list[dict]) -> None:
     # ── CART ──────────────────────────────────────────────────────────────────
     with cart_col:
         st.markdown('<div class="cart-card">', unsafe_allow_html=True)
-        st.markdown("#### 🛒 Tu carrito")
+        st.markdown("#### Tu carrito")
         if not items:
             st.info("Aún no tienes productos. Elige un sabor arriba.")
         else:
@@ -1025,7 +1076,7 @@ def render_checkout(products: list[dict]) -> None:
     # ── FORM ──────────────────────────────────────────────────────────────────
     with form_col:
         st.markdown('<div class="checkout-card">', unsafe_allow_html=True)
-        st.markdown("#### 📝 Datos de entrega")
+        st.markdown("#### Datos de entrega")
         if not items:
             st.caption("Agrega productos al carrito para activar el formulario.")
             st.markdown("</div>", unsafe_allow_html=True)
@@ -1082,6 +1133,63 @@ def render_checkout(products: list[dict]) -> None:
         st.markdown("</div>", unsafe_allow_html=True)
 
 
+def render_team() -> None:
+    team = [
+        {
+            "initials": "SC",
+            "name": "Stefannya Cujar",
+            "role": "Cofundadora · Marca y Producto",
+            "color": "#245C2A",
+            "skills": ["Identidad de marca", "Desarrollo de producto", "Estrategia DTC"],
+        },
+        {
+            "initials": "DC",
+            "name": "Darlen Certuche",
+            "role": "Cofundadora · Operaciones",
+            "color": "#C4871A",
+            "skills": ["Gestión operativa", "Producción artesanal", "Logística local"],
+        },
+        {
+            "initials": "PR",
+            "name": "Paola Rivera",
+            "role": "Cofundadora · Marketing",
+            "color": "#A85232",
+            "skills": ["Redes sociales", "Contenido de marca", "Comunidad y crecimiento"],
+        },
+    ]
+    cards = "".join(
+        f"""
+        <article class="team-card">
+          <div class="team-avatar" style="background:{m['color']}">{m['initials']}</div>
+          <p class="team-name">{m['name']}</p>
+          <p class="team-role">{m['role']}</p>
+          <div class="team-skills">
+            {''.join(f'<span class="team-skill-tag">{s}</span>' for s in m['skills'])}
+          </div>
+        </article>
+        """
+        for m in team
+    )
+    st.markdown(
+        f"""
+        <section class="section-band">
+          <div class="section-head">
+            <div>
+              <div class="section-kicker">El equipo</div>
+              <h2 class="section-title">Las personas detrás del crujido.</h2>
+            </div>
+            <p class="section-copy">
+              Un equipo pequeño con roles claros y una convicción común:
+              el snack bueno no tiene que ser complicado.
+            </p>
+          </div>
+          <div class="team-grid">{cards}</div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def render_footer() -> None:
     st.markdown(
         f"""
@@ -1112,6 +1220,7 @@ def main() -> None:
     render_checkout(products)
     render_moments()
     render_blog()
+    render_team()
     render_footer()
 
 
