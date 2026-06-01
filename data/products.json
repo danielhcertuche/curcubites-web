@@ -1,29 +1,38 @@
 [
   {
-    "id": "curcubites-150g",
-    "name": "Curcubites 150 g",
-    "tagline": "Bolsa individual",
-    "description": "Chips de platano horneadas con curcuma y pimienta negra. Crujientes, practicas y sin fritura.",
-    "price": 8500,
-    "image": "ig_posts/post_1_crujiente_sin_culpa.jpg",
-    "badge": "Mas pedido"
+    "id": "original-13g",
+    "name": "Curcubites Original",
+    "tagline": "El clásico sin dramas",
+    "description": "Plátano horneado con cúrcuma y pimienta negra. Crujiente, natural y sin fritura.",
+    "price": 4000,
+    "image": "imgenes_finales/c0661bdd-e0ce-42bf-93d8-ee2a60dd867c.jpeg",
+    "badge": "Más pedido",
+    "badge_color": "#245C2A",
+    "flavor_tag": "ORIGINAL",
+    "ingredients": "Plátano + cúrcuma + pimienta negra"
   },
   {
-    "id": "pack-3",
-    "name": "Pack x 3 bolsas",
-    "tagline": "Para la semana",
-    "description": "Tres bolsas de 150 g para oficina, universidad o despues de entrenar.",
-    "price": 24000,
-    "image": "ig_posts/post_2_postgym_sin_dramas.jpg",
-    "badge": "Ahorra"
+    "id": "picante-13g",
+    "name": "Curcubites Picante",
+    "tagline": "Para los que aguantan",
+    "description": "Todo el sabor del original más el golpe de chili. Para paladares atrevidos.",
+    "price": 8000,
+    "image": "imgenes_finales/55d95c75-98ae-4418-a4df-c4689f51441c.jpeg",
+    "badge": "Edición especial",
+    "badge_color": "#A85232",
+    "flavor_tag": "PICANTE",
+    "ingredients": "Plátano + cúrcuma + pimienta negra + chili"
   },
   {
-    "id": "pack-6",
-    "name": "Caja x 6 bolsas",
-    "tagline": "Para compartir",
-    "description": "Seis bolsas de 150 g para casa, reuniones o compra grupal.",
-    "price": 45000,
-    "image": "ig_posts/post_3_detalle_que_cambia_todo.jpg",
-    "badge": "Mejor valor"
+    "id": "dulce-13g",
+    "name": "Curcubites Dulce",
+    "tagline": "Antojo dulce, versión real",
+    "description": "Plátano con pimienta y miel. Para el momento goloso sin culpa.",
+    "price": 8000,
+    "image": "curcubites_concept_1_crujiente_sin_culpa_original_borde_verde.jpg",
+    "badge": "Edición especial",
+    "badge_color": "#D99A22",
+    "flavor_tag": "DULCE",
+    "ingredients": "Plátano + pimienta + miel"
   }
 ]
