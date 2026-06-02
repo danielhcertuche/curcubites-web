@@ -195,8 +195,29 @@ def inject_styles() -> None:
         .stApp { background: var(--cream); color: var(--ink); }
         html, body, [class*="css"] { font-family: 'DM Sans', system-ui, sans-serif; }
 
-        [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
-        #MainMenu, footer { visibility: hidden; height: 0; }
+        /* ── Hide ALL Streamlit chrome: header, toolbar, footer, deploy badge,
+              "Created by" viewer badge, status widget ── */
+        #MainMenu,
+        header,
+        footer,
+        [data-testid="stHeader"],
+        [data-testid="stToolbar"],
+        [data-testid="stDecoration"],
+        [data-testid="stStatusWidget"],
+        [data-testid="stDeployButton"],
+        .stDeployButton,
+        .viewerBadge_container__1QSob,
+        .viewerBadge_link__qRIco,
+        [class*="viewerBadge"],
+        [class*="watermark"],
+        [class*="ProfileBadge"] {
+          display: none !important;
+          visibility: hidden !important;
+          height: 0 !important;
+          width: 0 !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
         [data-testid="stSidebar"] { display: none; }
         [data-testid="stMainBlockContainer"] {
           max-width: 1140px;
