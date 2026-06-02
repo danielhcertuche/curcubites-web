@@ -93,8 +93,8 @@ def order_message(items: list[dict], name: str, phone: str, city: str, address: 
 
 
 def whatsapp_url(message: str) -> str:
-    number = get_secret("WHATSAPP_NUMBER", "").strip().replace("+", "")
-    base = f"https://wa.me/{number}" if number else "https://wa.me/"
+    number = get_secret("WHATSAPP_NUMBER", "573008901210").strip().replace("+", "")
+    base = f"https://wa.me/{number}"
     return f"{base}?text={quote(message)}"
 
 
@@ -815,7 +815,7 @@ def render_nav(cart_count: int = 0) -> None:
           <a href="https://www.tiktok.com/search?q=curcubites_snack" target="_blank" rel="noopener"
              title="TikTok" aria-label="TikTok de Curcubites">TK</a>
           <a href="#blog" title="Blog" aria-label="Blog Curcubites">BL</a>
-          <a href="https://wa.me/?text=Hola%2C+quiero+pedir+Curcubites" target="_blank" rel="noopener"
+          <a href="https://wa.me/573008901210?text=Hola%2C+quiero+pedir+Curcubites" target="_blank" rel="noopener"
              title="WhatsApp" aria-label="Contactar por WhatsApp">WA</a>
         </aside>
         <div class="cart-rail" aria-label="Carrito de compras">
