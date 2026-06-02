@@ -110,6 +110,65 @@ def image_data_uri(path_str: str) -> str:
     return f"data:{mime};base64,{base64.b64encode(path.read_bytes()).decode()}"
 
 
+def _logo_svg(size: int) -> str:
+    """
+    Inline SVG logo. NO filter on text — filter ref failure makes text invisible.
+    Gradients only for ring + wave. Solid #F5A01A for text (reliable).
+    ViewBox 300×300. Ring r=145 outer, r=135 inner disc.
+    Text font-size 44 ≈ 220px wide → ~25px inset each side from disc edge.
+    Wave x=78..224 → ~30px inset from disc edge.
+    Unique ID suffix = size avoids gradient collision when logo appears twice.
+    """
+    u = size
+    return (
+        f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"'
+        f' width="{size}" height="{size}" aria-label="Logo Curcubites" role="img">'
+        f'<defs>'
+        f'<linearGradient id="lgg{u}" x1="0%" y1="0%" x2="100%" y2="100%">'
+        f'<stop offset="0%" stop-color="#F5C042"/>'
+        f'<stop offset="50%" stop-color="#F5A01A"/>'
+        f'<stop offset="100%" stop-color="#E8900A"/>'
+        f'</linearGradient>'
+        f'<linearGradient id="lgw1{u}" x1="0%" y1="0%" x2="100%" y2="0%">'
+        f'<stop offset="0%" stop-color="#4CAF50"/>'
+        f'<stop offset="45%" stop-color="#8BC34A"/>'
+        f'<stop offset="100%" stop-color="#2E7D32"/>'
+        f'</linearGradient>'
+        f'<linearGradient id="lgw2{u}" x1="0%" y1="0%" x2="100%" y2="0%">'
+        f'<stop offset="0%" stop-color="#388E3C"/>'
+        f'<stop offset="55%" stop-color="#66BB6A"/>'
+        f'<stop offset="100%" stop-color="#43A047"/>'
+        f'</linearGradient>'
+        f'</defs>'
+        f'<circle cx="150" cy="150" r="145" fill="url(#lgg{u})"/>'
+        f'<circle cx="150" cy="150" r="135" fill="#FFFFFF"/>'
+        f'<text x="150" y="168"'
+        f' font-family="Georgia,serif"'
+        f' font-size="44" font-weight="700" font-style="italic"'
+        f' fill="#F5A01A" text-anchor="middle">Curcubites</text>'
+        f'<path d="M78 194 C108 182,132 190,150 187 C170 184,196 176,224 183"'
+        f' stroke="url(#lgw1{u})" stroke-width="5" fill="none"'
+        f' stroke-linecap="round"/>'
+        f'<path d="M82 202 C112 190,134 198,150 195 C170 192,196 184,222 191"'
+        f' stroke="url(#lgw2{u})" stroke-width="2.8" fill="none"'
+        f' stroke-linecap="round" opacity="0.68"/>'
+        f'</svg>'
+    )
+
+
+def _cart_btn_uri() -> str:
+    """Cart SVG encoded as base64 data URI for safe use as CSS background-image."""
+    svg = (
+        '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"'
+        ' fill="none" stroke="#FFF6E6" stroke-width="2.2"'
+        ' stroke-linecap="round" stroke-linejoin="round">'
+        '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>'
+        '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>'
+        '</svg>'
+    )
+    return f"data:image/svg+xml;base64,{base64.b64encode(svg.encode()).decode()}"
+
+
 
 def inject_styles() -> None:
     st.markdown(
@@ -160,12 +219,7 @@ def inject_styles() -> None:
           margin-bottom: 1.2rem;
         }
         .brand-lockup { display: flex; align-items: center; gap: 0.72rem; }
-        .brand-logo {
-          width: 40px; height: 40px; border-radius: 50%;
-          object-fit: cover;
-          border: 1.5px solid var(--line);
-          flex-shrink: 0;
-        }
+        .brand-logo { display: block; flex-shrink: 0; line-height: 0; }
         .brand-name { font-weight: 900; letter-spacing: 0; line-height: 1; }
         .brand-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.12rem; }
         .navlinks { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; justify-content: flex-end; }
@@ -726,33 +780,22 @@ def inject_styles() -> None:
     )
 
 
-CART_SVG = (
-    '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" '
-    'fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">'
-    '<circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>'
-    '<path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>'
-    '</svg>'
-)
 
 
-def render_nav(cart_count: int = 0, logo_uri: str = "") -> None:
-    logo_html = (
-        f'<img class="brand-logo" src="{logo_uri}" alt="Logo Curcubites">'
-        if logo_uri
-        else '<div class="brand-mark" style="width:40px;height:40px;border-radius:50%;'
-             'background:var(--olive);color:var(--cream);display:grid;place-items:center;'
-             'font-family:\'Playfair Display\',serif;font-weight:900;font-size:1.1rem">C</div>'
-    )
+def render_nav(cart_count: int = 0) -> None:
     badge_html = (
         f'<span class="cart-badge">{cart_count}</span>'
         if cart_count > 0
         else ""
     )
+    # Cart icon as CSS background-image (base64 data URI) — SVG inside <a> gets
+    # stripped by Streamlit's renderer; using background-image is reliable.
+    cart_icon_uri = _cart_btn_uri()
     st.markdown(
         f"""
         <nav class="topbar">
           <div class="brand-lockup">
-            {logo_html}
+            <span class="brand-logo">{_logo_svg(44)}</span>
             <div>
               <div class="brand-name">Curcubites</div>
               <div class="brand-sub">Chips de plátano horneadas</div>
@@ -776,10 +819,11 @@ def render_nav(cart_count: int = 0, logo_uri: str = "") -> None:
              title="WhatsApp" aria-label="Contactar por WhatsApp">WA</a>
         </aside>
         <div class="cart-rail" aria-label="Carrito de compras">
-          <a href="#carrito" title="Ir al carrito" aria-label="Ir al carrito de compras">
-            {CART_SVG}
-            {badge_html}
-          </a>
+          <a href="#carrito"
+             title="Ir al carrito"
+             aria-label="Carrito: {cart_count} producto{'s' if cart_count != 1 else ''}"
+             style="background-image:url('{cart_icon_uri}');
+                    background-size:55%;background-repeat:no-repeat;background-position:center">{badge_html}</a>
         </div>
         """,
         unsafe_allow_html=True,
@@ -801,7 +845,7 @@ def render_hero() -> None:
         <section id="inicio" class="hero">
           <div class="hero-copy">
             <div class="hero-brand-intro">
-              <div class="hero-logo-mark">C</div>
+              {_logo_svg(56)}
               <div>
                 <div class="hero-brand-name-text">Curcubites</div>
                 <div class="hero-brand-sub-text">Chips de plátano · Colombia</div>
@@ -1282,14 +1326,10 @@ def main() -> None:
     inject_styles()
     products = load_products()
 
-    # Cart count from session state (no products lookup needed at this point)
+    # Cart count from session state (no products lookup needed here)
     cart_count = sum(st.session_state.get("cart", {}).values())
 
-    # Logo — cached base64 encoding
-    logo_path = BASE_DIR / "imgenes_finales" / "logo_curcubites.jpeg"
-    logo_uri = image_data_uri(str(logo_path)) if logo_path.exists() else ""
-
-    render_nav(cart_count=cart_count, logo_uri=logo_uri)
+    render_nav(cart_count=cart_count)
     render_hero()
     render_trust_strip()
     render_products(products)

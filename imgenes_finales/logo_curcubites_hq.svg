@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300" width="300" height="300"
+  aria-label="Logo Curcubites" role="img">
+  <defs>
+    <linearGradient id="lgGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F5C042"/>
+      <stop offset="50%" stop-color="#F5A01A"/>
+      <stop offset="100%" stop-color="#E8900A"/>
+    </linearGradient>
+    <linearGradient id="lgW1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4CAF50"/>
+      <stop offset="45%" stop-color="#8BC34A"/>
+      <stop offset="100%" stop-color="#2E7D32"/>
+    </linearGradient>
+    <linearGradient id="lgW2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#388E3C"/>
+      <stop offset="55%" stop-color="#66BB6A"/>
+      <stop offset="100%" stop-color="#43A047"/>
+    </linearGradient>
+    <filter id="fts" x="-8%" y="-8%" width="116%" height="130%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.2"
+        flood-color="#B86B00" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+
+  <!-- Gold ring border -->
+  <circle cx="150" cy="150" r="145" fill="url(#lgGold)"/>
+  <!-- Inner white disc -->
+  <circle cx="150" cy="150" r="135" fill="#FFFFFF"/>
+
+  <!-- Wordmark — font-size 44 ≈ 220px wide, 25px inset from disc edge each side -->
+  <text x="150" y="168"
+    font-family="Georgia,'Times New Roman',serif"
+    font-size="44" font-weight="700" font-style="italic"
+    fill="#F5A01A" text-anchor="middle" letter-spacing="0"
+    filter="url(#fts)">Curcubites</text>
+
+  <!-- Wave swoosh — 30px inset from disc edge, two paths for depth -->
+  <path d="M 78 194 C 108 182,132 190,150 187 C 170 184,196 176,224 183"
+    stroke="url(#lgW1)" stroke-width="5" fill="none"
+    stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 82 202 C 112 190,134 198,150 195 C 170 192,196 184,222 191"
+    stroke="url(#lgW2)" stroke-width="2.8" fill="none"
+    stroke-linecap="round" stroke-linejoin="round" opacity="0.68"/>
+</svg>
