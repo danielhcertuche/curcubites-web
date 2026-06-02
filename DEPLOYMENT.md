@@ -1,55 +1,54 @@
-# Despliegue gratis en Streamlit Cloud
+# Despliegue en Streamlit Cloud
 
-## Archivos que se suben
+## Archivos en el repo
 
-Este repo esta empacado para subir solo lo necesario:
+- `app.py` — aplicación principal
+- `requirements.txt` — dependencias (`streamlit==1.45.1`)
+- `.streamlit/config.toml` — tema de marca (verde #245C2A, crema #FFF6E6)
+- `.streamlit/secrets.example.toml` — plantilla de secretos, sin valores reales
+- `data/products.json` — catálogo editable (3 SKUs: Original, Picante, Dulce)
+- `imgenes_finales/` — fotos reales del producto (lifestyle + estudio)
+- `imgenes_finales/logo_curcubites_hq.svg` — logo vectorial generado
+- `curcubites_concept_1_crujiente_sin_culpa_original_borde_verde.jpg` — imagen Dulce
 
-- `app.py`: aplicacion principal.
-- `requirements.txt`: dependencias.
-- `.streamlit/config.toml`: tema visual.
-- `.streamlit/secrets.example.toml`: ejemplo de configuracion, sin secretos reales.
-- `data/products.json`: catalogo editable.
-- `ig_posts/*.jpg` y `curcubites_concept_1_crujiente_sin_culpa.jpg`: imagenes usadas por la app.
-- `.github/workflows/streamlit-smoke.yml`: prueba gratis en GitHub Actions.
-- `README.md` y `plan.md`: documentacion.
+No se suben: `.venv/`, `__pycache__/`, `secrets.toml`, PDFs, borradores.
 
-No se suben PDFs, borradores, entorno virtual, caches ni secretos.
+## Pasos para deploy
 
-## Pasos
-
-1. Crear repo publico gratis en GitHub: `curcubites-web`.
-2. Ejecutar:
+1. Push al repo:
 
 ```bash
-git push -u origin main
+git push origin main
 ```
 
-3. Abrir `https://share.streamlit.io`.
-4. Conectar GitHub.
-5. Elegir:
+2. Abrir [share.streamlit.io](https://share.streamlit.io)
+3. Conectar GitHub
+4. Configurar:
 
-```text
-Repository: danielhcertuche/curcubites-web
-Branch: main
-Main file path: app.py
+```
+Repository : danielhcertuche/curcubites-web
+Branch     : main
+Main file  : app.py
 ```
 
-6. Deploy.
+5. Deploy
 
-## Secrets opcionales
+## Secrets en Streamlit Cloud
 
-Para WhatsApp directo:
+App → Settings → Secrets:
 
 ```toml
-WHATSAPP_NUMBER = "573001234567"
-ORDER_EMAIL = "ventas@curcubites.com"
+WHATSAPP_NUMBER = "573008901210"
+ORDER_EMAIL     = "ventas@curcubites.com"
 ```
 
-Si no configuras `WHATSAPP_NUMBER`, la app sigue funcionando gratis: abre WhatsApp con el mensaje listo.
+`WHATSAPP_NUMBER` ya está hardcodeado como fallback en el código — la app funciona sin configurar el secret. El secret permite cambiarlo sin tocar el código.
 
-## Checklist antes de publicar
+## Checklist pre-deploy
 
-- Revisar precios en `data/products.json`.
-- Cambiar numero de WhatsApp en secrets de Streamlit.
-- Abrir app local y probar agregar al carrito.
-- Confirmar que el boton de WhatsApp genera el mensaje correcto.
+- [ ] Precios correctos en `data/products.json`
+- [ ] WhatsApp number confirmado: 300 890 1210
+- [ ] Prueba local: agregar al carrito → checkout → mensaje WhatsApp
+- [ ] Prueba: botón "Pedir" lleva a sección de productos
+- [ ] Prueba: cart badge muestra conteo al agregar ítems
+- [ ] Secrets configurados en Streamlit Cloud
